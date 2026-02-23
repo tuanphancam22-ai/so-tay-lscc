@@ -1,47 +1,46 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay Cấp Cứu</title>
-    <style>
-        body { font-family: -apple-system, sans-serif; background: #f4f7f9; padding: 15px; }
-        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 20px; box-sizing: border-box; font-size: 16px; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #007bff; }
-        .category { font-size: 11px; color: #007bff; font-weight: bold; text-transform: uppercase; }
-        .title { font-size: 18px; margin: 5px 0; color: #333; }
-        .red-flag { background: #fff1f0; color: #d93025; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: 10px; border: 1px solid #ffccc7; }
-    </style>
-</head>
-<body>
-    <input type="text" id="searchInput" class="search-bar" placeholder="Tra cứu phác đồ, tên thuốc...">
-    <div id="content"></div>
+<script>
+    const SHEET_ID = 1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE;
+    const SHEET_NAME = 'Sheet1';
+    // Đường dẫn để lấy dữ liệu CSV từ Google Sheets
+    const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
 
-    <script>
-        // Dữ liệu mẫu (Lát nữa chúng ta sẽ thay bằng Google Sheets API)
-        const data = [
-            { cat: "Tim mạch", title: "Sốc Phản Vệ", detail: "Adrenaline 1/1000 TB nửa ống...", alert: "Kiểm tra đường thở ngay!" },
-            { cat: "Hô hấp", title: "Hen Phế Quản Cấp", detail: "Xịt Salbutamol 2-4 nhát...", alert: "Cẩn thận tràn khí màng phổi." }
-        ];
+    let data = [];
 
-        function render(list) {
-            document.getElementById('content').innerHTML = list.map(item => `
-                <div class="card">
-                    <div class="category">${item.cat}</div>
-                    <div class="title">${item.title}</div>
-                    <div class="detail">${item.detail}</div>
-                    <div class="red-flag">⚠️ ${item.alert}</div>
-                </div>
-            `).join('');
-        }
-
-        render(data);
-
-        // Chức năng tìm kiếm nhanh
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const filtered = data.filter(i => i.title.toLowerCase().includes(e.target.value.toLowerCase()));
-            render(filtered);
+    // Hàm lấy dữ liệu từ Google Sheets
+    async function fetchData() {
+        const response = await fetch(URL);
+        const text = await response.text();
+        
+        // Chuyển đổi CSV thành mảng JSON (Bỏ qua hàng đầu tiên)
+        const rows = text.split('\n').slice(1);
+        data = rows.map(row => {
+            const cols = row.split('","').map(c => c.replace(/"/g, ''));
+            return { cat: cols[0], title: cols[1], detail: cols[2], alert: cols[3] };
         });
-    </script>
-</body>
-</html>
+        
+        render(data);
+    }
+
+    function render(list) {
+        document.getElementById('content').innerHTML = list.map(item => `
+            <div class="card">
+                <div class="category">${item.cat}</div>
+                <div class="title">${item.title}</div>
+                <div class="detail">${item.detail}</div>
+                <div class="red-flag">⚠️ ${item.alert}</div>
+            </div>
+        `).join('');
+    }
+
+    // Chức năng tìm kiếm
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const filtered = data.filter(i => 
+            i.title.toLowerCase().includes(e.target.value.toLowerCase()) ||
+            i.cat.toLowerCase().includes(e.target.value.toLowerCase())
+        );
+        render(filtered);
+    });
+
+    // Chạy hàm lấy dữ liệu khi trang web load
+    fetchData();
+</script>
