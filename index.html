@@ -1,69 +1,86 @@
-<script>
-    const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
-    const SHEET_NAME = 'Sheet1';
-    const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Tay Cấp Cứu - Minh Chí</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f4f7f9; padding: 15px; margin: 0; }
+        .header-app { background: #007bff; color: white; padding: 20px 15px; margin: -15px -15px 20px -15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; outline: none; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #007bff; }
+        .category { font-size: 11px; color: #007bff; font-weight: bold; text-transform: uppercase; }
+        .title { font-size: 18px; margin: 5px 0; color: #333; font-weight: bold; }
+        .detail { font-size: 14px; color: #555; line-height: 1.4; white-space: pre-wrap; }
+        .red-flag { background: #fff1f0; color: #d93025; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: 10px; border: 1px solid #ffccc7; }
+        #loading { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
 
-    let data = [];
+    <div class="header-app">
+        <h2 style="margin: 0 0 10px 0; font-size: 20px;">🚑 Sổ Tay Lâm Sàng</h2>
+        <input type="text" id="searchInput" class="search-bar" placeholder="Tra cứu nhanh phác đồ, thuốc...">
+    </div>
 
-    async function fetchData() {
-        try {
-            const response = await fetch(URL);
-            const text = await response.text();
-            
-            // Xử lý CSV an toàn hơn bằng Regex
-            const rows = text.split('\n').slice(1);
-            data = rows.map(row => {
-                // Tách các cột theo dấu phẩy nhưng bỏ qua dấu phẩy nằm trong ngoặc kép
-                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-                const cleanCols = cols.map(c => c.replace(/^"|"$/g, '').trim());
+    <div id="loading">Đang tải dữ liệu từ Google Sheets...</div>
+    <div id="content"></div>
+
+    <script>
+        const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
+        const SHEET_NAME = 'Sheet1';
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+
+        let data = [];
+
+        async function fetchData() {
+            try {
+                const response = await fetch(URL);
+                if (!response.ok) throw new Error('Không thể kết nối Google Sheets');
+                const text = await response.text();
                 
-                return { 
-                    cat: cleanCols[0] || "Chưa phân loại", 
-                    title: cleanCols[1] || "Không tiêu đề", 
-                    detail: cleanCols[2] || "", 
-                    alert: cleanCols[3] || "" 
-                };
-            });
-            
-            render(data);
-        } catch (error) {
-            console.error("Lỗi lấy dữ liệu:", error);
-            document.getElementById('content').innerHTML = "<p style='color:red; padding:20px;'>Lỗi kết nối dữ liệu! Hãy kiểm tra quyền chia sẻ của Google Sheet.</p>";
-        }
-    }
+                // Tách dòng và xử lý dữ liệu
+                const rows = text.split('\n').slice(1);
+                data = rows.map(row => {
+                    // Regex tách CSV chuẩn hơn
+                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                    const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                    return { cat: clean[0], title: clean[1], detail: clean[2], alert: clean[3] };
+                }).filter(item => item.title); // Loại bỏ dòng trống
 
-    function render(list) {
-        const container = document.getElementById('content');
-        if (!container) return;
-
-        if (list.length === 0) {
-            container.innerHTML = "<p style='padding:20px;'>Không tìm thấy nội dung...</p>";
-            return;
+                document.getElementById('loading').style.display = 'none';
+                render(data);
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `<p style="color:red">Lỗi: ${error.message}<br>Hãy đảm bảo Sheet đã được Share ở chế độ 'Anyone with the link'</p>`;
+            }
         }
 
-        container.innerHTML = list.map(item => `
-            <div class="card" style="background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #007bff;">
-                <div class="category" style="font-size: 11px; color: #007bff; font-weight: bold; text-transform: uppercase;">${item.cat}</div>
-                <div class="title" style="font-size: 18px; margin: 5px 0; color: #333; font-weight: bold;">${item.title}</div>
-                <div class="detail" style="font-size: 14px; color: #555;">${item.detail}</div>
-                ${item.alert ? `<div class="red-flag" style="background: #fff1f0; color: #d93025; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: 10px; border: 1px solid #ffccc7;">⚠️ ${item.alert}</div>` : ''}
-            </div>
-        `).join('');
-    }
-
-    // Đảm bảo các phần tử HTML đã tồn tại trước khi gán sự kiện
-    window.onload = () => {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                const filtered = data.filter(i => 
-                    i.title.toLowerCase().includes(term) ||
-                    i.cat.toLowerCase().includes(term)
-                );
-                render(filtered);
-            });
+        function render(list) {
+            const container = document.getElementById('content');
+            if (list.length === 0) {
+                container.innerHTML = "<p style='text-align:center'>Không tìm thấy nội dung phù hợp.</p>";
+                return;
+            }
+            container.innerHTML = list.map(item => `
+                <div class="card">
+                    <div class="category">${item.cat || 'Chung'}</div>
+                    <div class="title">${item.title}</div>
+                    <div class="detail">${item.detail || ''}</div>
+                    ${item.alert ? `<div class="red-flag">⚠️ ${item.alert}</div>` : ''}
+                </div>
+            `).join('');
         }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = data.filter(i => 
+                (i.title && i.title.toLowerCase().includes(term)) || 
+                (i.cat && i.cat.toLowerCase().includes(term))
+            );
+            render(filtered);
+        });
+
         fetchData();
-    };
-</script>
+    </script>
+</body>
+</html>
