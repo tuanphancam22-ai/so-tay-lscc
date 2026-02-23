@@ -3,52 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay Lâm Sàng - Minh Chí</title>
+    <title>Sổ Tay Lâm Sàng</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f4f7f9; padding: 15px; margin: 0; }
-        .header-app { background: #007bff; color: white; padding: 20px 15px; margin: -15px -15px 20px -15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        body { font-family: -apple-system, sans-serif; background: #f4f7f9; padding: 15px; margin: 0; text-align: center; }
+        .header-app { background: #007bff; color: white; padding: 20px 15px; margin: -15px -15px 15px -15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .nav-buttons { display: flex; gap: 10px; margin-top: 15px; }
-        .nav-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; margin-bottom: 15px; margin-top: 15px;}
+        .nav-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; margin-bottom: 15px; }
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #007bff; text-align: left; }
         .category { font-size: 11px; color: #007bff; font-weight: bold; text-transform: uppercase; }
         .title { font-size: 18px; margin: 5px 0; color: #333; font-weight: bold; }
         .detail { font-size: 14px; color: #555; line-height: 1.4; white-space: pre-wrap; }
         .red-flag { background: #fff1f0; color: #d93025; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: 10px; border: 1px solid #ffccc7; }
-        .gcs-select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: white; border: 1px solid #007bff; font-size: 16px; -webkit-appearance: none; }
-        #gcs-section p { margin-bottom: 5px; font-weight: bold; color: #444; }
+        .gcs-select { width: 100%; padding: 14px; border-radius: 8px; margin-bottom: 15px; background: white; border: 1.5px solid #007bff; font-size: 16px; font-weight: 500; }
+        #gcs-section p { text-align: left; margin-bottom: 5px; font-weight: bold; color: #444; }
     </style>
 </head>
 <body>
 
     <div class="header-app">
-        <h2 style="margin:0; text-align: center;">🚑 Sổ Tay Lâm Sàng</h2>
+        <h2 style="margin:0;">🚑 Sổ Tay Lâm Sàng</h2>
         <div class="nav-buttons">
-            <button class="nav-btn" onclick="switchMode('lookup')" id="btn-lookup" style="background:white; color:#007bff;">Tra cứu</button>
-            <button class="nav-btn" onclick="switchMode('gcs')" id="btn-gcs" style="background:#0056b3; color:white;">Tính GCS</button>
+            <button class="nav-btn" id="btn-lookup" style="background:white; color:#007bff;">Tra cứu</button>
+            <button class="nav-btn" id="btn-gcs" style="background:#0056b3; color:white;">Tính GCS</button>
         </div>
     </div>
 
     <div id="lookup-section">
         <input type="text" id="searchInput" class="search-bar" placeholder="Tìm phác đồ, thuốc...">
-        <div id="content"></div>
+        <div id="content">Đang tải dữ liệu Sheet1...</div>
     </div>
 
-    <div id="gcs-section" style="display:none; padding: 10px;">
-        <h3 style="text-align:center; color:#333; margin-top: 0;">Thang điểm Glasgow</h3>
-        
+    <div id="gcs-section" style="display:none; padding: 5px;">
         <p>Mắt (E):</p>
-        <select id="e_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải dữ liệu...</option></select>
-        
+        <select id="e_score" class="gcs-select"></select>
         <p>Lời nói (V):</p>
-        <select id="v_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải dữ liệu...</option></select>
-        
+        <select id="v_score" class="gcs-select"></select>
         <p>Vận động (M):</p>
-        <select id="m_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải dữ liệu...</option></select>
+        <select id="m_score" class="gcs-select"></select>
 
-        <div id="gcs-result" style="margin-top:20px; padding:20px; background:#28a745; color:white; border-radius:12px; text-align:center;">
-            <h1 id="total-score" style="margin:0;">15 điểm</h1>
-            <p id="gcs-status" style="margin:5px 0 0 0;">Bình thường</p>
+        <div id="gcs-result" style="margin-top:10px; padding:20px; background:#28a745; color:white; border-radius:12px;">
+            <h1 id="total-score" style="margin:0; font-size: 40px;">15 điểm</h1>
+            <p id="gcs-status" style="margin:5px 0 0 0; font-weight: bold;">Bình thường</p>
         </div>
     </div>
 
@@ -59,25 +55,26 @@
 
         let dataLookup = [];
 
-        // HÀM CHUYỂN CHẾ ĐỘ (FIX LỖI MẤT HÀM)
-        window.switchMode = function(mode) {
-            const lookupSec = document.getElementById('lookup-section');
-            const gcsSec = document.getElementById('gcs-section');
+        // HÀM CHUYỂN CHẾ ĐỘ (Dùng EventListener để chống lỗi ReferenceError)
+        function switchMode(mode) {
+            document.getElementById('lookup-section').style.display = (mode === 'lookup' ? 'block' : 'none');
+            document.getElementById('gcs-section').style.display = (mode === 'gcs' ? 'block' : 'none');
+            
             const btnLookup = document.getElementById('btn-lookup');
             const btnGcs = document.getElementById('btn-gcs');
-
-            if (mode === 'lookup') {
-                lookupSec.style.display = 'block';
-                gcsSec.style.display = 'none';
+            
+            if(mode === 'lookup') {
                 btnLookup.style.background = "white"; btnLookup.style.color = "#007bff";
                 btnGcs.style.background = "#0056b3"; btnGcs.style.color = "white";
             } else {
-                lookupSec.style.display = 'none';
-                gcsSec.style.display = 'block';
                 btnGcs.style.background = "white"; btnGcs.style.color = "#007bff";
                 btnLookup.style.background = "#0056b3"; btnLookup.style.color = "white";
             }
-        };
+        }
+
+        // Gán sự kiện trực tiếp cho nút bấm
+        document.getElementById('btn-lookup').onclick = () => switchMode('lookup');
+        document.getElementById('btn-gcs').onclick = () => switchMode('gcs');
 
         // LẤY DỮ LIỆU PHÁC ĐỒ
         async function fetchLookup() {
@@ -91,11 +88,74 @@
                     return { cat: clean[0], title: clean[1], detail: clean[2], alert: clean[3] };
                 });
                 renderLookup(dataLookup);
-            } catch (e) { console.error("Lỗi Sheet1:", e); }
+            } catch (e) { document.getElementById('content').innerText = "Lỗi tải Sheet1!"; }
         }
 
         function renderLookup(list) {
             document.getElementById('content').innerHTML = list.map(item => `
                 <div class="card">
                     <div class="category">${item.cat || ''}</div>
-                    <div class="title">${item.title ||
+                    <div class="title">${item.title || ''}</div>
+                    <div class="detail">${item.detail || ''}</div>
+                    ${item.alert ? `<div class="red-flag">⚠️ ${item.alert}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // LẤY DỮ LIỆU GCS
+        async function fetchGCS() {
+            try {
+                const res = await fetch(URL_GCS);
+                const text = await res.text();
+                const rows = text.split('\n').slice(1);
+                const gcsItems = rows.map(row => {
+                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                    const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                    return { nhom: clean[0], mo_ta: clean[1], diem: clean[2] };
+                });
+
+                const fillSelect = (id, groupName) => {
+                    const select = document.getElementById(id);
+                    const filtered = gcsItems.filter(i => i.nhom === groupName);
+                    select.innerHTML = filtered.map(i => `<option value="${i.diem}">${i.diem} - ${i.mo_ta}</option>`).join('');
+                };
+
+                fillSelect('e_score', 'Mắt');
+                fillSelect('v_score', 'Lời nói');
+                fillSelect('m_score', 'Vận động');
+                
+                // Thêm sự kiện tính điểm
+                document.getElementById('e_score').onchange = calcGCS;
+                document.getElementById('v_score').onchange = calcGCS;
+                document.getElementById('m_score').onchange = calcGCS;
+                calcGCS();
+            } catch (e) { console.error("Lỗi GCS", e); }
+        }
+
+        function calcGCS() {
+            const e = parseInt(document.getElementById('e_score').value) || 0;
+            const v = parseInt(document.getElementById('v_score').value) || 0;
+            const m = parseInt(document.getElementById('m_score').value) || 0;
+            const total = e + v + m;
+            document.getElementById('total-score').innerText = total + " điểm";
+            
+            let status = "Bình thường", color = "#28a745";
+            if (total <= 8) { status = "⚠️ NẶNG - Đặt NKQ!"; color = "#dc3545"; }
+            else if (total <= 12) { status = "TRUNG BÌNH"; color = "#ffc107"; }
+            
+            const resDiv = document.getElementById('gcs-result');
+            resDiv.style.background = color;
+            document.getElementById('gcs-status').innerText = status;
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = dataLookup.filter(i => (i.title || "").toLowerCase().includes(term));
+            renderLookup(filtered);
+        });
+
+        fetchLookup();
+        fetchGCS();
+    </script>
+</body>
+</html>
