@@ -69,4 +69,134 @@
 
     <script>
         const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
-        const URL_LOOKUP = `https://docs
+        const URL_LOOKUP = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
+        const URL_GCS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=GCS`;
+
+        // CHUYỂN CHẾ ĐỘ (FIX LỖI MẤT GCS)
+        function switchMode(mode) {
+            document.getElementById('lookup-section').style.display = (mode === 'lookup' ? 'block' : 'none');
+            document.getElementById('gcs-section').style.display = (mode === 'gcs' ? 'block' : 'none');
+            document.getElementById('abg-section').style.display = (mode === 'abg' ? 'block' : 'none');
+            
+            const btns = ['btn-lookup', 'btn-gcs', 'btn-abg'];
+            btns.forEach(b => {
+                const el = document.getElementById(b);
+                if(b === 'btn-' + mode) {
+                    el.style.background = "white"; el.style.color = "#007bff";
+                } else {
+                    el.style.background = "#0056b3"; el.style.color = "white";
+                }
+            });
+        }
+
+        // PHÂN TÍCH KHÍ MÁU CHUYÊN SÂU
+        function analyzeABG() {
+            const ph = parseFloat(document.getElementById('abg_ph').value);
+            const pco2 = parseFloat(document.getElementById('abg_pco2').value);
+            const hco3 = parseFloat(document.getElementById('abg_hco3').value);
+            const na = parseFloat(document.getElementById('abg_na').value);
+            const cl = parseFloat(document.getElementById('abg_cl').value);
+
+            if (!ph || !pco2 || !hco3) return alert("Vui lòng nhập ít nhất pH, pCO2 và HCO3!");
+
+            let diag = "";
+            let details = "";
+
+            // Logic pH
+            if (ph < 7.35) diag = "TOAN "; else if (ph > 7.45) diag = "KIỀM "; else diag = "pH BÌNH THƯỜNG ";
+
+            // Logic Hô hấp/Chuyển hóa
+            if (pco2 > 45 && ph < 7.4) diag += "HÔ HẤP";
+            else if (hco3 < 22 && ph < 7.4) diag += "CHUYỂN HÓA";
+            else if (pco2 < 35 && ph > 7.4) diag += "HÔ HẤP";
+            else if (hco3 > 26 && ph > 7.4) diag += "CHUYỂN HÓA";
+
+            // Winters Formula cho Toan chuyển hóa
+            if (diag.includes("TOAN CHUYỂN HÓA")) {
+                const expectedPCO2 = (1.5 * hco3) + 8;
+                details += `• <b>Winters:</b> pCO2 kỳ vọng ≈ ${expectedPCO2.toFixed(1)} ± 2.<br>`;
+                if (pco2 > expectedPCO2 + 2) details += `→ Kèm Toan hô hấp hỗn hợp.<br>`;
+                else if (pco2 < expectedPCO2 - 2) details += `→ Kèm Kiềm hô hấp hỗn hợp.<br>`;
+                else details += `→ Bù trừ hô hấp phù hợp.<br>`;
+            }
+
+            // Anion Gap (AG)
+            if (na && cl) {
+                const ag = na - (cl + hco3);
+                details += `• <b>Anion Gap:</b> ${ag.toFixed(1)} (Bình thường: 12 ± 4).<br>`;
+                if (ag > 16) details += `→ Toan chuyển hóa tăng AG.<br>`;
+            }
+
+            document.getElementById('abg-result-box').style.display = "block";
+            document.getElementById('abg-diag').innerText = diag;
+            document.getElementById('abg-details').innerHTML = details || "Ổn định, chưa phát hiện rối loạn bù trừ.";
+        }
+
+        // TẢI DỮ LIỆU
+        let dataLookup = [];
+        async function fetchData() {
+            try {
+                // Tải Sheet1
+                const res1 = await fetch(URL_LOOKUP);
+                const text1 = await res1.text();
+                const rows1 = text1.split('\n').slice(1);
+                dataLookup = rows1.map(row => {
+                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                    const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                    return { cat: clean[0], title: clean[1], detail: clean[2], alert: clean[3] };
+                });
+                renderLookup(dataLookup);
+
+                // Tải GCS
+                const res2 = await fetch(URL_GCS);
+                const text2 = await res2.text();
+                const rows2 = text2.split('\n').slice(1);
+                const gcsItems = rows2.map(row => {
+                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                    const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                    return { nhom: clean[0], mo: clean[1], diem: clean[2] };
+                });
+
+                const fill = (id, group) => {
+                    const sel = document.getElementById(id);
+                    const items = gcsItems.filter(i => i.nhom === group);
+                    sel.innerHTML = items.map(i => `<option value="${i.diem}">${i.diem} - ${i.mo}</option>`).join('');
+                };
+                fill('e_score', 'Mắt'); fill('v_score', 'Lời nói'); fill('m_score', 'Vận động');
+                calcGCS();
+            } catch (e) { console.error("Lỗi tải dữ liệu", e); }
+        }
+
+        function renderLookup(list) {
+            document.getElementById('content').innerHTML = list.map(item => `
+                <div class="card">
+                    <div class="category">${item.cat || ''}</div>
+                    <div class="title">${item.title || ''}</div>
+                    <div class="detail">${item.detail || ''}</div>
+                    ${item.alert ? `<div class="red-flag">⚠️ ${item.alert}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function calcGCS() {
+            const e = parseInt(document.getElementById('e_score').value) || 0;
+            const v = parseInt(document.getElementById('v_score').value) || 0;
+            const m = parseInt(document.getElementById('m_score').value) || 0;
+            const total = e + v + m;
+            document.getElementById('total-score').innerText = total + " điểm";
+            let s = "Bình thường", c = "#28a745";
+            if (total <= 8) { s = "⚠️ NẶNG - Đặt NKQ!"; c = "#dc3545"; }
+            else if (total <= 12) { s = "TRUNG BÌNH"; c = "#ffc107"; }
+            document.getElementById('gcs-result').style.background = c;
+            document.getElementById('gcs-status').innerText = s;
+        }
+
+        document.getElementById('searchInput').oninput = (e) => {
+            const term = e.target.value.toLowerCase();
+            renderLookup(dataLookup.filter(i => (i.title || "").toLowerCase().includes(term)));
+        };
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
