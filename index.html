@@ -66,46 +66,46 @@
     </div>
 
     <script>
-    // Thêm tên Tab GCS
-    const SHEET_GCS_NAME = 'GCS'; 
-    const GCS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_GCS_NAME}`;
-
-    async function fetchGCSData() {
-        try {
-            const response = await fetch(GCS_URL);
-            const text = await response.text();
-            const rows = text.split('\n').slice(1);
-            
-            const gcsData = rows.map(row => {
-                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-                const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
-                return { nhom: clean[0], mo_ta: clean[1], diem: clean[2] };
-            });
-
-            // Tự động tạo Option cho từng nhóm Mắt, Lời nói, Vận động
-            renderGCSOptions(gcsData, 'Mắt', 'e_score');
-            renderGCSOptions(gcsData, 'Lời nói', 'v_score');
-            renderGCSOptions(gcsData, 'Vận động', 'm_score');
-
-        } catch (error) {
-            console.error("Lỗi tải dữ liệu GCS:", error);
+        // Thêm tên Tab GCS
+        const SHEET_GCS_NAME = 'GCS'; 
+        const GCS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_GCS_NAME}`;
+    
+        async function fetchGCSData() {
+            try {
+                const response = await fetch(GCS_URL);
+                const text = await response.text();
+                const rows = text.split('\n').slice(1);
+                
+                const gcsData = rows.map(row => {
+                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                    const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                    return { nhom: clean[0], mo_ta: clean[1], diem: clean[2] };
+                });
+    
+                // Tự động tạo Option cho từng nhóm Mắt, Lời nói, Vận động
+                renderGCSOptions(gcsData, 'Mắt', 'e_score');
+                renderGCSOptions(gcsData, 'Lời nói', 'v_score');
+                renderGCSOptions(gcsData, 'Vận động', 'm_score');
+    
+            } catch (error) {
+                console.error("Lỗi tải dữ liệu GCS:", error);
+            }
         }
-    }
-
-    function renderGCSOptions(data, nhom, elementId) {
-        const select = document.getElementById(elementId);
-        const options = data.filter(item => item.nhom === nhom);
-        
-        select.innerHTML = options.map(item => 
-            `<option value="${item.diem}">${item.diem} - ${item.mo_ta}</option>`
-        ).join('');
-    }
-
-    // Gọi hàm này khi load trang
-    window.onload = () => {
-        fetchData();    // Lấy dữ liệu phác đồ
-        fetchGCSData(); // Lấy dữ liệu GCS từ Sheet
-    };
+    
+        function renderGCSOptions(data, nhom, elementId) {
+            const select = document.getElementById(elementId);
+            const options = data.filter(item => item.nhom === nhom);
+            
+            select.innerHTML = options.map(item => 
+                `<option value="${item.diem}">${item.diem} - ${item.mo_ta}</option>`
+            ).join('');
+        }
+    
+        // Gọi hàm này khi load trang
+        window.onload = () => {
+            fetchData();    // Lấy dữ liệu phác đồ
+            fetchGCSData(); // Lấy dữ liệu GCS từ Sheet
+        };
     </script>
 </body>
 </html>
