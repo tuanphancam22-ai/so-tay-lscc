@@ -6,22 +6,23 @@
     <title>Sổ Tay Lâm Sàng - Minh Chí</title>
     <style>
         body { font-family: -apple-system, sans-serif; background: #f4f7f9; padding: 15px; margin: 0; }
-        .header-app { background: #007bff; color: white; padding: 20px 15px; margin: -15px -15px 20px -15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); sticky top: 0; z-index: 100; }
+        .header-app { background: #007bff; color: white; padding: 20px 15px; margin: -15px -15px 20px -15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .nav-buttons { display: flex; gap: 10px; margin-top: 15px; }
-        .nav-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; margin-bottom: 15px; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #007bff; }
+        .nav-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; margin-bottom: 15px; margin-top: 15px;}
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #007bff; text-align: left; }
         .category { font-size: 11px; color: #007bff; font-weight: bold; text-transform: uppercase; }
         .title { font-size: 18px; margin: 5px 0; color: #333; font-weight: bold; }
         .detail { font-size: 14px; color: #555; line-height: 1.4; white-space: pre-wrap; }
         .red-flag { background: #fff1f0; color: #d93025; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: 10px; border: 1px solid #ffccc7; }
-        .gcs-select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: white; border: 1px solid #007bff; font-size: 15px; }
+        .gcs-select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: white; border: 1px solid #007bff; font-size: 16px; -webkit-appearance: none; }
+        #gcs-section p { margin-bottom: 5px; font-weight: bold; color: #444; }
     </style>
 </head>
 <body>
 
     <div class="header-app">
-        <h2 style="margin:0;">🚑 Sổ Tay Lâm Sàng</h2>
+        <h2 style="margin:0; text-align: center;">🚑 Sổ Tay Lâm Sàng</h2>
         <div class="nav-buttons">
             <button class="nav-btn" onclick="switchMode('lookup')" id="btn-lookup" style="background:white; color:#007bff;">Tra cứu</button>
             <button class="nav-btn" onclick="switchMode('gcs')" id="btn-gcs" style="background:#0056b3; color:white;">Tính GCS</button>
@@ -34,13 +35,16 @@
     </div>
 
     <div id="gcs-section" style="display:none; padding: 10px;">
-        <h3 style="text-align:center; color:#333;">Thang điểm Glasgow</h3>
-        <p><b>Mắt (E):</b></p>
-        <select id="e_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải...</option></select>
-        <p><b>Lời nói (V):</b></p>
-        <select id="v_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải...</option></select>
-        <p><b>Vận động (M):</b></p>
-        <select id="m_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải...</option></select>
+        <h3 style="text-align:center; color:#333; margin-top: 0;">Thang điểm Glasgow</h3>
+        
+        <p>Mắt (E):</p>
+        <select id="e_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải dữ liệu...</option></select>
+        
+        <p>Lời nói (V):</p>
+        <select id="v_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải dữ liệu...</option></select>
+        
+        <p>Vận động (M):</p>
+        <select id="m_score" class="gcs-select" onchange="calcGCS()"><option>Đang tải dữ liệu...</option></select>
 
         <div id="gcs-result" style="margin-top:20px; padding:20px; background:#28a745; color:white; border-radius:12px; text-align:center;">
             <h1 id="total-score" style="margin:0;">15 điểm</h1>
@@ -55,22 +59,43 @@
 
         let dataLookup = [];
 
-        // 1. CHẾ ĐỘ CHUYỂN TRANG
-        function switchMode(mode) {
-            document.getElementById('lookup-section').style.display = (mode === 'lookup' ? 'block' : 'none');
-            document.getElementById('gcs-section').style.display = (mode === 'gcs' ? 'block' : 'none');
+        // HÀM CHUYỂN CHẾ ĐỘ (FIX LỖI MẤT HÀM)
+        window.switchMode = function(mode) {
+            const lookupSec = document.getElementById('lookup-section');
+            const gcsSec = document.getElementById('gcs-section');
             const btnLookup = document.getElementById('btn-lookup');
             const btnGcs = document.getElementById('btn-gcs');
-            if(mode === 'lookup') {
+
+            if (mode === 'lookup') {
+                lookupSec.style.display = 'block';
+                gcsSec.style.display = 'none';
                 btnLookup.style.background = "white"; btnLookup.style.color = "#007bff";
                 btnGcs.style.background = "#0056b3"; btnGcs.style.color = "white";
             } else {
+                lookupSec.style.display = 'none';
+                gcsSec.style.display = 'block';
                 btnGcs.style.background = "white"; btnGcs.style.color = "#007bff";
                 btnLookup.style.background = "#0056b3"; btnLookup.style.color = "white";
             }
-        }
+        };
 
-        // 2. LẤY DỮ LIỆU TRA CỨU
+        // LẤY DỮ LIỆU PHÁC ĐỒ
         async function fetchLookup() {
             try {
-                const res = await fetch(
+                const res = await fetch(URL_LOOKUP);
+                const text = await res.text();
+                const rows = text.split('\n').slice(1);
+                dataLookup = rows.map(row => {
+                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                    const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+                    return { cat: clean[0], title: clean[1], detail: clean[2], alert: clean[3] };
+                });
+                renderLookup(dataLookup);
+            } catch (e) { console.error("Lỗi Sheet1:", e); }
+        }
+
+        function renderLookup(list) {
+            document.getElementById('content').innerHTML = list.map(item => `
+                <div class="card">
+                    <div class="category">${item.cat || ''}</div>
+                    <div class="title">${item.title ||
