@@ -17,70 +17,84 @@
     </style>
 </head>
 <body>
-
     <div class="header-app">
-        <h2 style="margin: 0 0 10px 0; font-size: 20px;">🚑 Sổ Tay Lâm Sàng</h2>
-        <input type="text" id="searchInput" class="search-bar" placeholder="Tra cứu nhanh phác đồ, thuốc...">
+        <h2 style="margin: 0 0 10px 0;">🚑 Sổ Tay Lâm Sàng</h2>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="switchMode('lookup')" style="flex:1; padding: 8px; border-radius: 5px; border: none; background: white; color: #007bff; font-weight: bold;">Tra cứu</button>
+            <button onclick="switchMode('gcs')" style="flex:1; padding: 8px; border-radius: 5px; border: none; background: #cce5ff; color: #004085; font-weight: bold;">Tính GCS</button>
+        </div>
     </div>
 
-    <div id="loading">Đang tải dữ liệu từ Google Sheets...</div>
-    <div id="content"></div>
+    <div id="lookup-section">
+        <input type="text" id="searchInput" class="search-bar" placeholder="Tra cứu nhanh phác đồ, thuốc..." style="margin: 0 15px 15px 15px; width: calc(100% - 30px);">
+        <div id="content"></div>
+    </div>
+
+    <div id="gcs-section" style="display: none; padding: 15px;">
+        <h3 style="text-align:center;">Thang điểm Glasgow (GCS)</h3>
+        <div id="gcs-container">
+            <p><b>Mắt (E):</b></p>
+            <select id="e_score" onchange="calcGCS()" class="search-bar">
+                <option value="4">4 - Mở tự nhiên</option>
+                <option value="3">3 - Mở khi gọi</option>
+                <option value="2">2 - Mở khi đau</option>
+                <option value="1">1 - Không mở</option>
+            </select>
+            <p><b>Lời nói (V):</b></p>
+            <select id="v_score" onchange="calcGCS()" class="search-bar">
+                <option value="5">5 - Định hướng đúng</option>
+                <option value="4">4 - Nhầm lẫn</option>
+                <option value="3">3 - Từ bất thích hợp</option>
+                <option value="2">2 - Âm vô nghĩa</option>
+                <option value="1">1 - Không đáp ứng</option>
+            </select>
+            <p><b>Vận động (M):</b></p>
+            <select id="m_score" onchange="calcGCS()" class="search-bar">
+                <option value="6">6 - Theo lệnh</option>
+                <option value="5">5 - Khu trú đau</option>
+                <option value="4">4 - Co rút đau</option>
+                <option value="3">3 - Gồng cứng mất vỏ</option>
+                <option value="2">2 - Duỗi cứng mất não</option>
+                <option value="1">1 - Không đáp ứng</option>
+            </select>
+        </div>
+        
+        <div id="gcs-result" style="margin-top: 20px; padding: 20px; background: #007bff; color: white; border-radius: 12px; text-align: center;">
+            <h1 id="total-score" style="margin: 0;">15 điểm</h1>
+            <p id="gcs-status" style="margin: 5px 0 0 0;">Bình thường</p>
+        </div>
+    </div>
 
     <script>
-        const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
-        const SHEET_NAME = 'Sheet1';
-        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+        // ... (Giữ nguyên các hàm fetchData và render từ bài trước ở đây) ...
 
-        let data = [];
-
-        async function fetchData() {
-            try {
-                const response = await fetch(URL);
-                if (!response.ok) throw new Error('Không thể kết nối Google Sheets');
-                const text = await response.text();
-                
-                // Tách dòng và xử lý dữ liệu
-                const rows = text.split('\n').slice(1);
-                data = rows.map(row => {
-                    // Regex tách CSV chuẩn hơn
-                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-                    const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
-                    return { cat: clean[0], title: clean[1], detail: clean[2], alert: clean[3] };
-                }).filter(item => item.title); // Loại bỏ dòng trống
-
-                document.getElementById('loading').style.display = 'none';
-                render(data);
-            } catch (error) {
-                document.getElementById('loading').innerHTML = `<p style="color:red">Lỗi: ${error.message}<br>Hãy đảm bảo Sheet đã được Share ở chế độ 'Anyone with the link'</p>`;
-            }
+        function switchMode(mode) {
+            document.getElementById('lookup-section').style.display = (mode === 'lookup' ? 'block' : 'none');
+            document.getElementById('gcs-section').style.display = (mode === 'gcs' ? 'block' : 'none');
         }
 
-        function render(list) {
-            const container = document.getElementById('content');
-            if (list.length === 0) {
-                container.innerHTML = "<p style='text-align:center'>Không tìm thấy nội dung phù hợp.</p>";
-                return;
+        function calcGCS() {
+            const e = parseInt(document.getElementById('e_score').value);
+            const v = parseInt(document.getElementById('v_score').value);
+            const m = parseInt(document.getElementById('m_score').value);
+            const total = e + v + m;
+            
+            document.getElementById('total-score').innerText = total + " điểm";
+            
+            let status = "Bình thường";
+            let color = "#28a745"; // Xanh lá
+            if (total <= 8) { 
+                status = "⚠️ NẶNG - Cân nhắc đặt NKQ!"; 
+                color = "#dc3545"; // Đỏ
+            } else if (total <= 12) { 
+                status = "TRUNG BÌNH"; 
+                color = "#ffc107"; // Vàng
             }
-            container.innerHTML = list.map(item => `
-                <div class="card">
-                    <div class="category">${item.cat || 'Chung'}</div>
-                    <div class="title">${item.title}</div>
-                    <div class="detail">${item.detail || ''}</div>
-                    ${item.alert ? `<div class="red-flag">⚠️ ${item.alert}</div>` : ''}
-                </div>
-            `).join('');
+            
+            const resultDiv = document.getElementById('gcs-result');
+            resultDiv.style.background = color;
+            document.getElementById('gcs-status').innerText = status;
         }
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = data.filter(i => 
-                (i.title && i.title.toLowerCase().includes(term)) || 
-                (i.cat && i.cat.toLowerCase().includes(term))
-            );
-            render(filtered);
-        });
-
-        fetchData();
     </script>
 </body>
 </html>
