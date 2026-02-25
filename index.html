@@ -3,58 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay Lâm Sàng Y Khoa</title>
+    <title>Sổ Tay Lâm Sàng - Khoa Cấp Cứu</title>
     <style>
-        :root { --primary: #007bff; --bg: #f4f7f9; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; }
-        .header { background: var(--primary); color: white; text-align: center; padding: 30px 15px; }
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-        .section-title { font-weight: bold; color: #555; margin: 20px 0 10px 5px; text-transform: uppercase; font-size: 13px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .menu-item { 
-            background: white; padding: 20px; border-radius: 12px; text-align: center; 
-            text-decoration: none; color: #333; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 0.2s; border: 1px solid transparent;
+        :root { 
+            --banner-color: #90888b; 
+            --bg-color: #f0f2f5;
+            --text-dark: #333;
         }
-        .menu-item:active { transform: scale(0.95); background: #eef6ff; border-color: var(--primary); }
-        .icon { font-size: 24px; margin-bottom: 8px; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-color); margin: 0; padding: 0; color: var(--text-dark); }
+        
+        /* Banner tùy chỉnh màu theo ý bạn */
+        .header { 
+            background: var(--banner-color); 
+            color: white; 
+            text-align: center; 
+            padding: 35px 15px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0; font-size: 22px; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; font-weight: 300; }
+
+        .container { padding: 15px; max-width: 600px; margin: auto; }
+        
+        .section-group { margin-bottom: 25px; }
+        .section-title { 
+            font-weight: bold; 
+            color: #666; 
+            margin: 0 0 12px 5px; 
+            text-transform: uppercase; 
+            font-size: 12px; 
+            display: flex;
+            align-items: center;
+        }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: #ddd; margin-left: 10px; }
+
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        
+        .menu-item { 
+            background: white; 
+            padding: 20px 10px; 
+            border-radius: 15px; 
+            text-align: center; 
+            text-decoration: none; 
+            color: var(--text-dark); 
+            font-weight: 600; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transition: all 0.2s ease;
+            border: 1px solid #eaeaea;
+        }
+        .menu-item:active { transform: translateY(2px); background: #fdfdfd; box-shadow: none; border-color: var(--banner-color); }
+        
+        .icon { font-size: 28px; margin-bottom: 10px; }
+        .full-width { grid-column: span 2; flex-direction: row; justify-content: center; gap: 15px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1 style="margin:0; font-size: 24px;">Khoa Cấp cứu - BV Đa Khoa Thiện Hạnh</h1>
-        <p style="margin:5px 0 0 0; opacity: 0.8;">Sổ Tay Lâm Sàng Thông Minh</p>
+        <h1>KHOA CẤP CỨU - BV THIỆN HẠNH</h1>
+        <p>Sổ Tay Lâm Sàng Thông Minh (Minh Chí - Trúc Quỳnh)</p>
     </div>
 
     <div class="container">
-        <div class="section-title">Phác đồ & Tiếp cận</div>
-        <div class="menu-grid">
-            <a href="phac-do.html" class="menu-item"><span class="icon">📜</span>Phác đồ</a>
-            <a href="tiep-can.html" class="menu-item"><span class="icon">🔍</span>Tiếp cận</a>
+        <div class="section-group">
+            <div class="section-title">Phác đồ & Tiếp cận</div>
+            <div class="menu-grid">
+                <a href="phac-do.html" class="menu-item"><span class="icon">📜</span>Phác đồ</a>
+                <a href="tiep-can.html" class="menu-item"><span class="icon">🔍</span>Tiếp cận</a>
+            </div>
         </div>
 
-        <div class="section-title">Thang điểm lâm sàng</div>
-        <div class="menu-grid">
-            <a href="gcs.html" class="menu-item"><span class="icon">🏥</span>GCS</a>
-            <a href="well-geneva.html" class="menu-item"><span class="icon">🫁</span>Nguy cơ thuyên tắc phổi Well/Geneva</a>
-            <a href="sofa.html" class="menu-item"><span class="icon">🤒</span>SOFA/qSOFA</a>
-            <a href="nihss.html" class="menu-item"><span class="icon">🧠</span>NIHSS</a>
+        <div class="section-group">
+            <div class="section-title">Thang điểm lâm sàng</div>
+            <div class="menu-grid">
+                <a href="gcs.html" class="menu-item"><span class="icon">🧠</span>GCS</a>
+                <a href="well-geneva.html" class="menu-item"><span class="icon">🫁</span>Well/Geneva</a>
+                <a href="sofa.html" class="menu-item"><span class="icon">🤒</span>SOFA/qSOFA</a>
+                <a href="nihss.html" class="menu-item"><span class="icon">🏥</span>NIHSS</a>
+            </div>
         </div>
 
-        <div class="section-title">Tính toán & Cận lâm sàng</div>
-        <div class="menu-grid">
-            <a href="khi-mau.html" class="menu-item"><span class="icon">🧪</span>Khí máu (ABG)</a>
-            <a href="than.html" class="menu-item"><span class="icon">💧</span>Thận (Cr/Cl)</a>
-            <a href="tham-thau.html" class="menu-item"><span class="icon">🍭</span>Áp lực thẩm thấu</a>
-            <a href="khang-sinh.html" class="menu-item"><span class="icon">💊</span>Kháng sinh</a>
+        <div class="section-group">
+            <div class="section-title">Tính toán & Cận lâm sàng</div>
+            <div class="menu-grid">
+                <a href="khi-mau.html" class="menu-item"><span class="icon">🧪</span>Khí máu (ABG)</a>
+                <a href="than.html" class="menu-item"><span class="icon">💧</span>Thận (Cr/Cl)</a>
+                <a href="tham-thau.html" class="menu-item"><span class="icon">🍭</span>Áp lực thẩm thấu</a>
+                <a href="khang-sinh.html" class="menu-item"><span class="icon">💊</span>Kháng sinh</a>
+            </div>
         </div>
 
-        <div class="section-title">Tra cứu thuốc</div>
-        <a href="tra-cuu-thuoc.html" class="menu-item" style="width: 100%; box-sizing: border-box;">
-            <span class="icon">💰</span>Tra cứu Thuốc BHYT & Viện phí
-        </a>
+        <div class="section-group">
+            <div class="section-title">Kinh tế y tế</div>
+            <div class="menu-grid">
+                <a href="tra-cuu-thuoc.html" class="menu-item full-width">
+                    <span class="icon">💰</span> Tra cứu Thuốc BHYT & Viện phí
+                </a>
+            </div>
+        </div>
     </div>
 
 </body>
