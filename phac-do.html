@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu Phác đồ Điều trị</title>
+    <style>
+        :root { --primary-color: #0C9943; }
+        body { font-family: -apple-system, sans-serif; background: #f4f7f9; margin: 0; padding: 15px; }
+        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: var(--primary-color); font-weight: bold; }
+        .header { background: var(--primary-color); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        
+        /* Thanh tìm kiếm */
+        .search-box { width: 100%; padding: 15px; border-radius: 25px; border: 2px solid #ddd; font-size: 16px; box-sizing: border-box; margin-bottom: 20px; outline: none; transition: 0.3s; }
+        .search-box:focus { border-color: var(--primary-color); box-shadow: 0 0 8px rgba(12,153,67,0.2); }
 
+        /* Danh sách phác đồ */
+        .protocol-list { display: flex; flex-direction: column; gap: 10px; }
+        .protocol-item { 
+            background: white; 
+            padding: 18px; 
+            border-radius: 12px; 
+            text-decoration: none; 
+            color: #333; 
+            font-weight: 600; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid #ccc;
+            transition: 0.2s;
+        }
+        .protocol-item:active { background: #f0f0f0; transform: scale(0.98); }
+        .protocol-item:hover { border-left-color: var(--primary-color); }
+        .arrow { color: #bbb; font-size: 20px; }
+        
+        .loading { text-align: center; color: #666; font-style: italic; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-btn">← Trang chủ</a>
+
+    <div class="header">
+        <h2 style="margin:0;">THƯ VIỆN PHÁC ĐỒ</h2>
+        <p style="margin:5px 0 0 0; font-size:12px; opacity:0.9;">Dữ liệu cập nhật từ Drive khoa</p>
+    </div>
+
+    <input type="text" id="searchInput" class="search-box" placeholder="Nhập tên phác đồ cần tìm..." onkeyup="filterProtocols()">
+
+    <div id="loading" class="loading">Đang tải danh sách từ Drive...</div>
+    <div id="protocolContainer" class="protocol-list"></div>
+
+    <script>
+        // Thay ID Sheet của bạn vào đây
+        const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
+        const SHEET_NAME = 'PhacDo'; // Tên tab chứa danh sách link
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+
+        let allProtocols = [];
+
+        async function loadProtocols() {
+            try {
+                const res = await fetch(URL);
+                const text = await res.text();
+                const rows = text.split('\n').slice(1); // Bỏ dòng tiêu đề
+                
+                allProtocols = rows.map(r => {
+                    // Xử lý tách dấu phẩy trong CSV
+                    const cols = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    return {
+                        name: cols[0]?.replace(/"/g,'').trim(),
+                        link: cols[1]?.replace(/"/g,'').trim()
+                    };
+                }).filter(p => p.name && p.link);
+
+                displayProtocols(allProtocols);
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                document.getElementById('loading').innerText = "Lỗi tải dữ liệu. Hãy kiểm tra lại file Sheet!";
+            }
+        }
+
+        function displayProtocols(list) {
+            const container = document.getElementById('protocolContainer');
+            container.innerHTML = list.map(p => `
+                <a href="${p.link}" target="_blank" class="protocol-item">
+                    <span>${p.name}</span>
+                    <span class="arrow">➔</span>
+                </a>
+            `).join('');
+        }
+
+        function filterProtocols() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allProtocols.filter(p => p.name.toLowerCase().includes(query));
+            displayProtocols(filtered);
+        }
+
+        window.onload = loadProtocols;
+    </script>
+</body>
+</html>
