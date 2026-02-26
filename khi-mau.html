@@ -5,24 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân tích Khí máu (ABG)</title>
     <style>
+        :root { --primary-green: #0C9943; }
         body { font-family: -apple-system, sans-serif; background: #f4f7f9; padding: 15px; margin: 0; }
-        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: #0C9943; font-weight: bold; }
-        .header { background: #0C9943; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        label { font-weight: bold; font-size: 13px; color: #666; display: block; margin-bottom: 5px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; background: #0C9943; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer; }
-        #res-box { margin-top: 20px; padding: 15px; border-radius: 10px; background: #eef9f1; border-left: 5px solid #0C9943; display: none; }
+        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: var(--primary-green); font-weight: bold; }
+        .header { background: var(--primary-green); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        label { font-weight: bold; font-size: 13px; color: #555; display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
+        input:focus { border-color: var(--primary-green); }
+        
+        button { width: 100%; padding: 18px; background: var(--primary-green); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 18px; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.98); opacity: 0.9; }
+
+        /* Vùng kết quả nâng cấp */
+        #res-box { margin-top: 25px; display: none; }
+        .validity-info { background: #fff3cd; border-left: 5px solid #ffc107; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; color: #856404; }
+        
+        #diag { 
+            color: #d93025; 
+            font-size: 26px; /* Chữ kết luận đỏ rất to */
+            font-weight: 800; 
+            margin: 0 0 15px 0; 
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+        
+        #details { 
+            font-size: 19px; /* Chữ chi tiết màu đen to rõ */
+            color: #1a1a1a; 
+            line-height: 1.6; 
+            background: #fdfdfd;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+        .highlight { color: var(--primary-green); font-weight: bold; }
     </style>
 </head>
 <body>
+
     <a href="index.html" class="back-btn">← Quay lại trang chủ</a>
-    <div class="header"><h2>Phân tích ABG</h2></div>
+    
+    <div class="header">
+        <h2 style="margin:0;">Phân tích ABG</h2>
+        <p style="margin:5px 0 0 0; font-size:12px; opacity:0.9;">Kiểm định & Phân tích chuyên sâu</p>
+    </div>
 
     <div class="card">
         <div class="grid">
-            <div><label>pH:</label><input type="number" id="ph" step="0.01" placeholder="7.4"></div>
+            <div><label>pH:</label><input type="number" id="ph" step="0.01" placeholder="7.40"></div>
             <div><label>pCO2 (mmHg):</label><input type="number" id="pco2" placeholder="40"></div>
         </div>
         <div class="grid">
@@ -37,8 +70,9 @@
     </div>
 
     <div id="res-box">
-        <h3 id="diag" style="margin:0; color:#d93025;"></h3>
-        <p id="details" style="margin:10px 0 0 0; line-height: 1.5; font-size: 14px;"></p>
+        <div id="validity" class="validity-info"></div>
+        <h3 id="diag"></h3>
+        <div id="details"></div>
     </div>
 
     <script>
@@ -46,36 +80,67 @@
             const ph = parseFloat(document.getElementById('ph').value);
             const pco2 = parseFloat(document.getElementById('pco2').value);
             const hco3 = parseFloat(document.getElementById('hco3').value);
-            const na = parseFloat(document.getElementById('na').value);
-            const cl = parseFloat(document.getElementById('cl').value);
+            const na = parseFloat(document.getElementById('na').value) || 140;
+            const cl = parseFloat(document.getElementById('cl').value) || 104;
             const alb = parseFloat(document.getElementById('alb').value) || 40;
 
-            if (!ph || !pco2 || !hco3) return alert("Nhập đủ pH, pCO2, HCO3!");
-
-            let diag = (ph < 7.35) ? "TOAN " : (ph > 7.45) ? "KIỀM " : "pH BÌNH THƯỜNG ";
-            let details = "";
-
-            // Phân loại hô hấp/chuyển hóa
-            if (pco2 > 45) diag += "HÔ HẤP"; else if (hco3 < 22) diag += "CHUYỂN HÓA"; 
-            else if (pco2 < 35) diag += "HÔ HẤP"; else if (hco3 > 26) diag += "CHUYỂN HÓA";
-
-            // Công thức Winters (Toan chuyển hóa)
-            if (diag.includes("TOAN CHUYỂN HÓA")) {
-                const expP = (1.5 * hco3 + 8);
-                details += `• <b>Winters:</b> pCO2 kỳ vọng ${expP.toFixed(1)} ± 2.<br>`;
+            if (!ph || !pco2 || !hco3) {
+                alert("Vui lòng nhập đủ pH, pCO2 và HCO3-");
+                return;
             }
 
-            // Anion Gap
-            if (na && cl) {
-                let ag = na - (cl + hco3);
-                let gapAlb = ag + 0.25 * (40 - alb); // AG hiệu chỉnh Albumin
-                details += `• <b>Anion Gap:</b> ${gapAlb.toFixed(1)} (BT: 12).<br>`;
-                if (gapAlb > 16) details += `-> Có toan chuyển hóa tăng AG.<br>`;
+            // 1. Kiểm định tính hợp lệ (H+ measured vs calculated)
+            const h_measured = Math.pow(10, -ph + 9); 
+            const h_calculated = (24 * pco2) / hco3;
+            const diff = Math.abs(h_measured - h_calculated);
+            const isValid = diff <= 5;
+
+            document.getElementById('validity').innerHTML = `
+                <b>Kiểm định:</b> [H+] đo: ${h_measured.toFixed(1)} | [H+] tính: ${h_calculated.toFixed(1)}<br>
+                ${isValid ? "✅ Kết quả hợp lệ." : "⚠️ Kết quả có sự không nhất quán (ΔH+ > 5)!"}
+            `;
+
+            // 2. Xác định rối loạn
+            let diag = (ph < 7.35) ? "Toan " : (ph > 7.45) ? "Kiềm " : "pH Bình thường ";
+            let primary = "";
+            
+            if (pco2 > 45) primary = "Hô hấp"; 
+            else if (hco3 < 22) primary = "Chuyển hóa";
+            else if (pco2 < 35) primary = "Hô hấp";
+            else if (hco3 > 26) primary = "Chuyển hóa";
+            
+            diag += primary;
+
+            // 3. Tính AG và Delta AG
+            const ag = na - (cl + hco3);
+            const ag_adj = ag + 0.25 * (40 - alb); // AG hiệu chỉnh
+            
+            // Nếu là toan chuyển hóa, kiểm tra AG để đưa vào kết luận đỏ
+            if (diag.includes("Toan Chuyển hóa") && ag_adj > 12) {
+                diag += " Tăng AG";
             }
 
+            // 4. Tính toán bù trừ & Chi tiết (Font chữ đen to)
+            let detailHtml = "";
+            
+            // AG Detail
+            detailHtml += `• <b>Anion Gap (adj):</b> <span class="highlight">${ag_adj.toFixed(1)}</span> (BT: 12)<br>`;
+            
+            // Winters Formula cho Toan chuyển hóa
+            if (diag.includes("Chuyển hóa")) {
+                const winters = (1.5 * hco3 + 8);
+                detailHtml += `• <b>Winters:</b> pCO2 dự kiến ${winters.toFixed(1)} ± 2<br>`;
+                if (pco2 > winters + 2) detailHtml += ` -> <span class="highlight">Kèm Toan hô hấp</span><br>`;
+                else if (pco2 < winters - 2) detailHtml += ` -> <span class="highlight">Kèm Kiềm hô hấp</span><br>`;
+            }
+
+            // Hiển thị kết quả
             document.getElementById('res-box').style.display = "block";
             document.getElementById('diag').innerText = diag;
-            document.getElementById('details').innerHTML = details;
+            document.getElementById('details').innerHTML = detailHtml;
+            
+            // Cuộn xuống kết quả cho dễ nhìn trên điện thoại
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
     </script>
 </body>
