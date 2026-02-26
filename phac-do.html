@@ -33,10 +33,26 @@
             position: relative; display: flex; flex-direction: column; 
         }
 
-        .modal-header { padding: 10px 15px; background: #eee; display: flex; justify-content: space-between; align-items: center; }
-        .close-btn { background: #d93025; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        
-        iframe { width: 100%; flex-grow: 1; border: none; }
+        /* Đây là phần mới thêm vào để tạo khung chứa iframe bảo mật */
+        .iframe-container {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Dải tàng hình chặn không cho bấm vào nút Download/Mở cửa sổ mới của Google */
+        .blocker-top {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 55px; /* Độ cao này sẽ che vừa đủ thanh công cụ của Drive */
+            background: transparent;
+            z-index: 10;
+        }
+
+        iframe { width: 100%; height: 100%; border: none; }
 
         .loading { text-align: center; color: #666; margin-top: 50px; }
     </style>
@@ -57,7 +73,10 @@
                 <span id="modalTitle" style="font-weight: bold; font-size: 14px; color: #333;"></span>
                 <button class="close-btn" onclick="closeDoc()">ĐÓNG</button>
             </div>
-            <iframe id="docFrame" src=""></iframe>
+            <div class="iframe-container">
+                <div class="blocker-top"></div> 
+                <iframe id="docFrame" src=""></iframe>
+            </div>
         </div>
     </div>
 
