@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thang điểm GCS</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f4f7f9; padding: 15px; margin: 0; }
+        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: #0C9943; font-weight: bold; }
+        .header { background: #0C9943; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        .input-group { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        label { font-weight: bold; display: block; margin-bottom: 8px; font-size: 14px; }
+        select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
+        #result-box { padding: 20px; border-radius: 12px; color: white; text-align: center; margin-top: 20px; transition: 0.3s; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Quay lại trang chủ</a>
+    <div class="header"><h2>Thang điểm GCS</h2></div>
+
+    <div class="input-group">
+        <label>Mắt (E):</label>
+        <select id="e_score" onchange="calc()"></select>
+    </div>
+    <div class="input-group">
+        <label>Lời nói (V):</label>
+        <select id="v_score" onchange="calc()"></select>
+    </div>
+    <div class="input-group">
+        <label>Vận động (M):</label>
+        <select id="m_score" onchange="calc()"></select>
+    </div>
+
+    <div id="result-box" style="background: #28a745;">
+        <h1 id="total" style="margin:0;">15 điểm</h1>
+        <p id="status" style="margin:5px 0 0 0; font-weight: bold;">Bình thường</p>
+    </div>
+
+    <script>
+        const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=GCS`;
+
+        async function init() {
+            const res = await fetch(URL);
+            const text = await res.text();
+            const rows = text.split('\n').slice(1);
+            const data = rows.map(r => {
+                const cols = r.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                return { nhom: cols[0].replace(/"/g,''), mo: cols[1].replace(/"/g,''), diem: cols[2] };
+            });
+
+            const fill = (id, group) => {
+                document.getElementById(id).innerHTML = data.filter(i => i.nhom === group)
+                    .map(i => `<option value="${i.diem}">${i.diem} - ${i.mo}</option>`).join('');
+            };
+            fill('e_score', 'Mắt'); fill('v_score', 'Lời nói'); fill('m_score', 'Vận động');
+            calc();
+        }
+
+        function calc() {
+            const e = parseInt(document.getElementById('e_score').value);
+            const v = parseInt(document.getElementById('v_score').value);
+            const m = parseInt(document.getElementById('m_score').value);
+            const t = e + v + m;
+            document.getElementById('total').innerText = t + " điểm";
+            let s = "Bình thường", c = "#28a745";
+            if (t <= 8) { s = "⚠️ NẶNG - Đặt NKQ!"; c = "#dc3545"; }
+            else if (t <= 12) { s = "TRUNG BÌNH"; c = "#ffc107"; }
+            document.getElementById('result-box').style.background = c;
+            document.getElementById('status').innerText = s;
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
