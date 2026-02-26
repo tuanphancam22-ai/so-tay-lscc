@@ -3,80 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phân tích Khí máu (ABG)</title>
+    <title>Thang điểm GCS</title>
     <style>
         body { font-family: -apple-system, sans-serif; background: #f4f7f9; padding: 15px; margin: 0; }
         .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: #0C9943; font-weight: bold; }
         .header { background: #0C9943; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        label { font-weight: bold; font-size: 13px; color: #666; display: block; margin-bottom: 5px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; background: #0C9943; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer; }
-        #res-box { margin-top: 20px; padding: 15px; border-radius: 10px; background: #eef9f1; border-left: 5px solid #0C9943; display: none; }
+        .input-group { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        label { font-weight: bold; display: block; margin-bottom: 8px; font-size: 14px; }
+        select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
+        #result-box { padding: 20px; border-radius: 12px; color: white; text-align: center; margin-top: 20px; transition: 0.3s; }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-btn">← Quay lại trang chủ</a>
-    <div class="header"><h2>Phân tích ABG</h2></div>
+    <div class="header"><h2>Thang điểm GCS</h2></div>
 
-    <div class="card">
-        <div class="grid">
-            <div><label>pH:</label><input type="number" id="ph" step="0.01" placeholder="7.4"></div>
-            <div><label>pCO2 (mmHg):</label><input type="number" id="pco2" placeholder="40"></div>
-        </div>
-        <div class="grid">
-            <div><label>HCO3- (mmol/L):</label><input type="number" id="hco3" placeholder="24"></div>
-            <div><label>Na+ (Natri):</label><input type="number" id="na" placeholder="140"></div>
-        </div>
-        <div class="grid">
-            <div><label>Cl- (Clo):</label><input type="number" id="cl" placeholder="104"></div>
-            <div><label>Albumin (g/L):</label><input type="number" id="alb" placeholder="40"></div>
-        </div>
-        <button onclick="analyze()">PHÂN TÍCH NGAY</button>
+    <div class="input-group">
+        <label>Mắt (E):</label>
+        <select id="e_score" onchange="calc()"></select>
+    </div>
+    <div class="input-group">
+        <label>Lời nói (V):</label>
+        <select id="v_score" onchange="calc()"></select>
+    </div>
+    <div class="input-group">
+        <label>Vận động (M):</label>
+        <select id="m_score" onchange="calc()"></select>
     </div>
 
-    <div id="res-box">
-        <h3 id="diag" style="margin:0; color:#d93025;"></h3>
-        <p id="details" style="margin:10px 0 0 0; line-height: 1.5; font-size: 14px;"></p>
+    <div id="result-box" style="background: #28a745;">
+        <h1 id="total" style="margin:0;">15 điểm</h1>
+        <p id="status" style="margin:5px 0 0 0; font-weight: bold;">Bình thường</p>
     </div>
 
     <script>
-        function analyze() {
-            const ph = parseFloat(document.getElementById('ph').value);
-            const pco2 = parseFloat(document.getElementById('pco2').value);
-            const hco3 = parseFloat(document.getElementById('hco3').value);
-            const na = parseFloat(document.getElementById('na').value);
-            const cl = parseFloat(document.getElementById('cl').value);
-            const alb = parseFloat(document.getElementById('alb').value) || 40;
+        const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=GCS`;
 
-            if (!ph || !pco2 || !hco3) return alert("Nhập đủ pH, pCO2, HCO3!");
+        async function init() {
+            const res = await fetch(URL);
+            const text = await res.text();
+            const rows = text.split('\n').slice(1);
+            const data = rows.map(r => {
+                const cols = r.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                return { nhom: cols[0].replace(/"/g,''), mo: cols[1].replace(/"/g,''), diem: cols[2] };
+            });
 
-            let diag = (ph < 7.35) ? "TOAN " : (ph > 7.45) ? "KIỀM " : "pH BÌNH THƯỜNG ";
-            let details = "";
-
-            // Phân loại hô hấp/chuyển hóa
-            if (pco2 > 45) diag += "HÔ HẤP"; else if (hco3 < 22) diag += "CHUYỂN HÓA"; 
-            else if (pco2 < 35) diag += "HÔ HẤP"; else if (hco3 > 26) diag += "CHUYỂN HÓA";
-
-            // Công thức Winters (Toan chuyển hóa)
-            if (diag.includes("TOAN CHUYỂN HÓA")) {
-                const expP = (1.5 * hco3 + 8);
-                details += `• <b>Winters:</b> pCO2 kỳ vọng ${expP.toFixed(1)} ± 2.<br>`;
-            }
-
-            // Anion Gap
-            if (na && cl) {
-                let ag = na - (cl + hco3);
-                let gapAlb = ag + 0.25 * (40 - alb); // AG hiệu chỉnh Albumin
-                details += `• <b>Anion Gap:</b> ${gapAlb.toFixed(1)} (BT: 12).<br>`;
-                if (gapAlb > 16) details += `-> Có toan chuyển hóa tăng AG.<br>`;
-            }
-
-            document.getElementById('res-box').style.display = "block";
-            document.getElementById('diag').innerText = diag;
-            document.getElementById('details').innerHTML = details;
+            const fill = (id, group) => {
+                document.getElementById(id).innerHTML = data.filter(i => i.nhom === group)
+                    .map(i => `<option value="${i.diem}">${i.diem} - ${i.mo}</option>`).join('');
+            };
+            fill('e_score', 'Mắt'); fill('v_score', 'Lời nói'); fill('m_score', 'Vận động');
+            calc();
         }
+
+        function calc() {
+            const e = parseInt(document.getElementById('e_score').value);
+            const v = parseInt(document.getElementById('v_score').value);
+            const m = parseInt(document.getElementById('m_score').value);
+            const t = e + v + m;
+            document.getElementById('total').innerText = t + " điểm";
+            let s = "Bình thường", c = "#28a745";
+            if (t <= 8) { s = "⚠️ NẶNG - Đặt NKQ!"; c = "#dc3545"; }
+            else if (t <= 12) { s = "TRUNG BÌNH"; c = "#ffc107"; }
+            document.getElementById('result-box').style.background = c;
+            document.getElementById('status').innerText = s;
+        }
+        window.onload = init;
     </script>
 </body>
 </html>
