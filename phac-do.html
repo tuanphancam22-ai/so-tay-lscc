@@ -48,15 +48,18 @@
 
         .close-btn:active { background: #a8231b !important; }
 
-        /* Thêm định dạng cho Tuyên bố miễn trừ trách nhiệm */
-        .disclaimer {
-            margin-top: 30px;
-            padding: 15px;
-            font-size: 12px;
-            color: #777;
+        /* Disclaimer kiểu mới cho Modal */
+        .modal-disclaimer {
+            background: #fff8e1; /* Màu vàng nhạt cảnh báo */
+            border-bottom: 1px solid #ffe082;
+            padding: 10px 15px;
+            font-size: 11px;
+            color: #856404;
+            line-height: 1.4;
             text-align: justify;
-            line-height: 1.5;
-            border-top: 1px solid #ddd;
+        }
+        .modal-disclaimer strong {
+            color: #bc4d00;
         }
         
         /* Đây là phần mới thêm vào để tạo khung chứa iframe bảo mật */
@@ -99,6 +102,11 @@
                 <span id="modalTitle" style="font-weight: bold; font-size: 14px; color: #333;"></span>
                 <button class="close-btn" onclick="closeDoc()">ĐÓNG</button>
             </div>
+
+            <div class="modal-disclaimer">
+                <strong>⚠️ CẢNH BÁO:</strong> Tài liệu chỉ dùng cho mục đích tham khảo nội bộ tại khoa. Nhân viên y tế cần cân nhắc lâm sàng và phác đồ hiện hành khi áp dụng. Chúng tôi miễn trừ mọi trách nhiệm pháp lý từ việc sử dụng sai mục đích.
+            </div>
+
             <div class="iframe-container">
                 <div class="blocker-top"></div> 
                 <iframe id="docFrame" src=""></iframe>
