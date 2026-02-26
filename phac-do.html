@@ -3,58 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu Phác đồ Điều trị</title>
+    <title>Thư viện Phác đồ</title>
     <style>
         :root { --primary-color: #0C9943; }
-        body { font-family: -apple-system, sans-serif; background: #f4f7f9; margin: 0; padding: 15px; }
+        body { font-family: -apple-system, sans-serif; background: #f4f7f9; margin: 0; padding: 15px; overflow-x: hidden; }
         .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: var(--primary-color); font-weight: bold; }
         .header { background: var(--primary-color); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
         
         /* Thanh tìm kiếm */
-        .search-box { width: 100%; padding: 15px; border-radius: 25px; border: 2px solid #ddd; font-size: 16px; box-sizing: border-box; margin-bottom: 20px; outline: none; transition: 0.3s; }
-        .search-box:focus { border-color: var(--primary-color); box-shadow: 0 0 8px rgba(12,153,67,0.2); }
+        .search-box { width: 100%; padding: 15px; border-radius: 25px; border: 2px solid #ddd; font-size: 16px; box-sizing: border-box; margin-bottom: 20px; outline: none; }
 
-        /* Danh sách phác đồ */
-        .protocol-list { display: flex; flex-direction: column; gap: 10px; }
+        /* Danh sách */
         .protocol-item { 
-            background: white; 
-            padding: 18px; 
-            border-radius: 12px; 
-            text-decoration: none; 
-            color: #333; 
-            font-weight: 600; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-left: 5px solid #ccc;
-            transition: 0.2s;
+            background: white; padding: 18px; border-radius: 12px; margin-bottom: 10px;
+            color: #333; font-weight: 600; display: flex; justify-content: space-between; 
+            align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #ccc; cursor: pointer;
         }
-        .protocol-item:active { background: #f0f0f0; transform: scale(0.98); }
         .protocol-item:hover { border-left-color: var(--primary-color); }
-        .arrow { color: #bbb; font-size: 20px; }
+
+        /* Overlay (Lớp nền mờ) */
+        .overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; 
+        }
+
+        /* Modal chứa tài liệu */
+        .modal { 
+            width: 95%; height: 90%; background: white; border-radius: 15px; overflow: hidden; 
+            position: relative; display: flex; flex-direction: column; 
+        }
+
+        .modal-header { padding: 10px 15px; background: #eee; display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { background: #d93025; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         
-        .loading { text-align: center; color: #666; font-style: italic; margin-top: 50px; }
+        iframe { width: 100%; flex-grow: 1; border: none; }
+
+        .loading { text-align: center; color: #666; margin-top: 50px; }
     </style>
 </head>
 <body>
 
     <a href="index.html" class="back-btn">← Trang chủ</a>
+    <div class="header"><h2>THƯ VIỆN PHÁC ĐỒ</h2></div>
 
-    <div class="header">
-        <h2 style="margin:0;">THƯ VIỆN PHÁC ĐỒ</h2>
-        <p style="margin:5px 0 0 0; font-size:12px; opacity:0.9;">Dữ liệu cập nhật từ Drive khoa</p>
+    <input type="text" id="searchInput" class="search-box" placeholder="Tìm tên phác đồ..." onkeyup="filterProtocols()">
+
+    <div id="loading" class="loading">Đang tải danh sách...</div>
+    <div id="protocolContainer"></div>
+
+    <div id="docOverlay" class="overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <span id="modalTitle" style="font-weight: bold; font-size: 14px; color: #333;"></span>
+                <button class="close-btn" onclick="closeDoc()">ĐÓNG</button>
+            </div>
+            <iframe id="docFrame" src=""></iframe>
+        </div>
     </div>
 
-    <input type="text" id="searchInput" class="search-box" placeholder="Nhập tên phác đồ cần tìm..." onkeyup="filterProtocols()">
-
-    <div id="loading" class="loading">Đang tải danh sách từ Drive...</div>
-    <div id="protocolContainer" class="protocol-list"></div>
-
     <script>
-        // Thay ID Sheet của bạn vào đây
         const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
-        const SHEET_NAME = 'PhacDo'; // Tên tab chứa danh sách link
+        const SHEET_NAME = 'PhacDo'; 
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
 
         let allProtocols = [];
@@ -63,10 +72,9 @@
             try {
                 const res = await fetch(URL);
                 const text = await res.text();
-                const rows = text.split('\n').slice(1); // Bỏ dòng tiêu đề
+                const rows = text.split('\n').slice(1);
                 
                 allProtocols = rows.map(r => {
-                    // Xử lý tách dấu phẩy trong CSV
                     const cols = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     return {
                         name: cols[0]?.replace(/"/g,'').trim(),
@@ -76,19 +84,44 @@
 
                 displayProtocols(allProtocols);
                 document.getElementById('loading').style.display = 'none';
-            } catch (error) {
-                document.getElementById('loading').innerText = "Lỗi tải dữ liệu. Hãy kiểm tra lại file Sheet!";
-            }
+            } catch (error) { console.error(error); }
         }
 
         function displayProtocols(list) {
             const container = document.getElementById('protocolContainer');
             container.innerHTML = list.map(p => `
-                <a href="${p.link}" target="_blank" class="protocol-item">
+                <div class="protocol-item" onclick="openDoc('${p.link}', '${p.name}')">
                     <span>${p.name}</span>
-                    <span class="arrow">➔</span>
-                </a>
+                    <span style="color:#bbb;">➔</span>
+                </div>
             `).join('');
+        }
+
+        // Hàm xử lý link Google Drive để nhúng
+        function openDoc(link, name) {
+            let embedLink = link;
+            
+            // Chuyển đổi link Drive thông thường sang link nhúng (preview)
+            if (link.includes('drive.google.com')) {
+                if (link.includes('/view')) {
+                    embedLink = link.replace('/view', '/preview');
+                } else if (link.includes('id=')) {
+                    // Xử lý link dạng ?id=xxx
+                    const id = link.split('id=')[1].split('&')[0];
+                    embedLink = `https://drive.google.com/file/d/${id}/preview`;
+                }
+            }
+
+            document.getElementById('modalTitle').innerText = name;
+            document.getElementById('docFrame').src = embedLink;
+            document.getElementById('docOverlay').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Chặn cuộn trang chính
+        }
+
+        function closeDoc() {
+            document.getElementById('docOverlay').style.display = 'none';
+            document.getElementById('docFrame').src = '';
+            document.body.style.overflow = 'auto';
         }
 
         function filterProtocols() {
