@@ -40,28 +40,37 @@
         const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=GCS`;
 
-        async function init() {
-            const res = await fetch(URL);
-            const text = await res.text();
-            const rows = text.split('\n').slice(1);
-            const data = rows.map(r => {
-                const cols = r.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-                return { nhom: cols[0].replace(/"/g,''), mo: cols[1].replace(/"/g,''), diem: cols[2] };
-            });
-
-            const fill = (id, group) => {
-                document.getElementById(id).innerHTML = data.filter(i => i.nhom === group)
-                    .map(i => `<option value="${i.diem}">${i.diem} - ${i.mo}</option>`).join('');
-            };
-            fill('e_score', 'Mắt'); fill('v_score', 'Lời nói'); fill('m_score', 'Vận động');
-            calc();
+    async function init() {
+            try {
+                const res = await fetch(URL);
+                const text = await res.text();
+                const rows = text.split('\n').slice(1);
+                const data = rows.map(r => {
+                    const cols = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Tách CSV chuẩn hơn
+                    return { 
+                        nhom: cols[0]?.replace(/"/g,'').trim(), 
+                        mo: cols[1]?.replace(/"/g,'').trim(), 
+                        diem: cols[2]?.replace(/"/g,'').trim() 
+                    };
+                }).filter(i => i.nhom);
+    
+                const fill = (id, group) => {
+                    const select = document.getElementById(id);
+                    select.innerHTML = data.filter(i => i.nhom === group)
+                        .map(i => `<option value="${i.diem}">${i.diem} - ${i.mo}</option>`).join('');
+                };
+                
+                fill('e_score', 'Mắt'); fill('v_score', 'Lời nói'); fill('m_score', 'Vận động');
+                calc();
+            } catch (e) { alert("Lỗi tải dữ liệu!"); }
         }
-
+    
         function calc() {
-            const e = parseInt(document.getElementById('e_score').value);
-            const v = parseInt(document.getElementById('v_score').value);
-            const m = parseInt(document.getElementById('m_score').value);
+            const e = parseInt(document.getElementById('e_score').value) || 0;
+            const v = parseInt(document.getElementById('v_score').value) || 0;
+            const m = parseInt(document.getElementById('m_score').value) || 0;
             const t = e + v + m;
+            
             document.getElementById('total').innerText = t + " điểm";
             let s = "Bình thường", c = "#28a745";
             if (t <= 8) { s = "⚠️ NẶNG - Đặt NKQ!"; c = "#dc3545"; }
