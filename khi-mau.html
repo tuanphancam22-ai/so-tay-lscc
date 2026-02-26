@@ -100,22 +100,42 @@
                 ${isValid ? "✅ Kết quả hợp lệ." : "⚠️ Kết quả có sự không nhất quán (ΔH+ > 5)!"}
             `;
 
-            // 2. Xác định rối loạn
-            let diag = (ph < 7.35) ? "Toan " : (ph > 7.45) ? "Kiềm " : "pH Bình thường ";
+            // 2. Xác định rối loạn (Logic bù trừ hoàn toàn)
             let primary = "";
-            
-            if (pco2 > 45) primary = "Hô hấp"; 
-            else if (hco3 < 22) primary = "Chuyển hóa";
-            else if (pco2 < 35) primary = "Hô hấp";
-            else if (hco3 > 26) primary = "Chuyển hóa";
-            
+            let isCompensated = false;
+    
+            if (ph < 7.35) {
+                diag = "Toan ";
+            } else if (ph > 7.45) {
+                diag = "Kiềm ";
+            } else {
+                // pH trong dải 7.35 - 7.45 nhưng có biến đổi pCO2 hoặc HCO3
+                if (pco2 !== 40 || hco3 !== 24) {
+                    isCompensated = true;
+                    diag = (ph < 7.40) ? "Toan " : "Kiềm "; // Xu hướng
+                } else {
+                    diag = "pH Bình thường ";
+                }
+            }
+    
+            // Xác định nguyên nhân Hô hấp hay Chuyển hóa
+            if (pco2 > 45 || (isCompensated && pco2 > 40 && ph < 7.40)) {
+                primary = "Hô hấp";
+            } else if (hco3 < 22 || (isCompensated && hco3 < 24 && ph < 7.40)) {
+                primary = "Chuyển hóa";
+            } else if (pco2 < 35 || (isCompensated && pco2 < 40 && ph > 7.40)) {
+                primary = "Hô hấp";
+            } else if (hco3 > 26 || (isCompensated && hco3 > 24 && ph > 7.40)) {
+                primary = "Chuyển hóa";
+            }
+    
             diag += primary;
-
-            // 3. Tính AG và Delta AG
+            if (isCompensated && primary !== "") diag += " bù trừ hoàn toàn";
+    
+            // 3. Tính AG và Delta AG (Giữ nguyên phần này)
             const ag = na - (cl + hco3);
-            const ag_adj = ag + 0.25 * (40 - alb); // AG hiệu chỉnh
+            const ag_adj = ag + 0.25 * (40 - alb);
             
-            // Nếu là toan chuyển hóa, kiểm tra AG để đưa vào kết luận đỏ
             if (diag.includes("Toan Chuyển hóa") && ag_adj > 12) {
                 diag += " Tăng AG";
             }
