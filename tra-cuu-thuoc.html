@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra Cứu Thuốc & Tính Liều</title>
+    <style>
+        :root { --primary: #0C9943; --bg: #f4f7f9; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        .back-btn { display: inline-block; margin-bottom: 15px; text-decoration: none; color: var(--primary); font-weight: bold; }
+        .header { background: var(--primary); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        
+        /* Search */
+        .search-box { width: 100%; padding: 15px; border-radius: 25px; border: 2px solid #ddd; font-size: 16px; box-sizing: border-box; margin-bottom: 20px; outline: none; }
+        
+        /* Drug Cards */
+        .drug-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; border-left: 5px solid var(--primary); }
+        .drug-title { color: var(--primary); font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+        .drug-sub { font-size: 14px; color: #555; line-height: 1.4; }
+        .hashtag { color: #007bff; font-size: 12px; font-style: italic; }
+
+        /* Modal */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal { width: 95%; height: 90%; background: white; border-radius: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        .modal-header { padding: 15px; background: #eee; display: flex; justify-content: space-between; position: sticky; top: 0; }
+        .modal-body { padding: 20px; flex-grow: 1; }
+        .close-btn { background: #d93025; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; }
+        
+        /* Calculator Section */
+        .calc-box { background: #eef9f1; padding: 15px; border-radius: 10px; margin-top: 20px; border: 1px dashed var(--primary); }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        label { font-size: 12px; font-weight: bold; color: #666; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 4px; box-sizing: border-box; }
+        .res-calc { background: var(--primary); color: white; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; }
+        
+        .field-label { font-weight: bold; color: var(--primary); margin-top: 15px; display: block; border-bottom: 1px solid #eee; }
+        .field-content { font-size: 15px; margin-top: 5px; line-height: 1.5; color: #333; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-btn">← Trang chủ</a>
+    <div class="header"><h2>DANH MỤC THUỐC</h2></div>
+
+    <input type="text" id="searchInput" class="search-box" placeholder="Tìm tên hoạt chất, biệt dược, nhóm..." onkeyup="searchDrug()">
+    
+    <div id="loading" style="text-align:center;">Đang tải dữ liệu thuốc...</div>
+    <div id="drugList"></div>
+
+    <div id="detailOverlay" class="overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <span id="m-title" style="font-weight:bold; color:var(--primary)"></span>
+                <button class="close-btn" onclick="closeDetail()">ĐÓNG</button>
+            </div>
+            <div class="modal-body">
+                <span class="field-label">BHYT:</span> <div id="m-bhyt" class="field-content"></div>
+                <span class="field-label">Viện phí:</span> <div id="m-vp" class="field-content"></div>
+                <span class="field-label">Chỉ định:</span> <div id="m-cd" class="field-content"></div>
+                <span class="field-label">Chống chỉ định:</span> <div id="m-ccd" class="field-content"></div>
+                <span class="field-label">Liều dùng:</span> <div id="m-lieu" class="field-content"></div>
+                <span class="field-label">Nhóm:</span> <div id="m-nhom" class="field-content"></div>
+
+                <div class="calc-box">
+                    <h3 style="margin:0 0 10px 0; color:var(--primary); font-size: 16px;">🧮 Máy tính liều truyền tĩnh mạch</h3>
+                    <div class="input-row">
+                        <div><label>Cân nặng (kg)</label><input type="number" id="w" value="50"></div>
+                        <div><label>Liều đích</label><input type="number" id="dose" step="0.01" value="0.1"></div>
+                    </div>
+                    <div class="input-row">
+                        <div>
+                            <label>Đơn vị liều</label>
+                            <select id="unit">
+                                <option value="ugkgmin">µg/kg/phút</option>
+                                <option value="ugmin">µg/phút</option>
+                                <option value="mgh">mg/giờ</option>
+                            </select>
+                        </div>
+                        <div><label>Số ống (1mg/ống)</label><input type="number" id="amp" value="5"></div>
+                    </div>
+                    <div class="input-row">
+                        <div><label>Dịch pha (ml)</label><input type="number" id="vol" value="500"></div>
+                        <div><label>Bộ dây (giọt/ml)</label><input type="number" id="df" value="20"></div>
+                    </div>
+                    <button onclick="calculateInfusion()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:5px; font-weight:bold;">TÍNH TỐC ĐỘ</button>
+                    
+                    <div id="calcResult" class="res-calc" style="display:none;">
+                        <div id="res-mlh" style="font-size: 20px; font-weight: bold;"></div>
+                        <div id="res-gtt" style="font-size: 16px; margin-top: 5px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Thuoc`;
+
+        let drugs = [];
+
+        async function loadData() {
+            try {
+                const res = await fetch(URL);
+                const text = await res.text();
+                const rows = text.split('\n').slice(1);
+                drugs = rows.map(r => {
+                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    return {
+                        hc: c[0]?.replace(/"/g,'').trim(),
+                        bhyt: c[1]?.replace(/"/g,'').trim(),
+                        vp: c[2]?.replace(/"/g,'').trim(),
+                        cd: c[3]?.replace(/"/g,'').trim(),
+                        ccd: c[4]?.replace(/"/g,'').trim(),
+                        lieu: c[5]?.replace(/"/g,'').trim(),
+                        nhom: c[6]?.replace(/"/g,'').trim()
+                    };
+                }).filter(d => d.hc);
+                renderDrugs(drugs);
+                document.getElementById('loading').style.display='none';
+            } catch (e) { alert("Lỗi tải dữ liệu!"); }
+        }
+
+        function renderDrugs(list) {
+            const container = document.getElementById('drugList');
+            container.innerHTML = list.map((d, index) => `
+                <div class="drug-card" onclick="openDetail(${JSON.stringify(index)})">
+                    <div class="drug-title">${d.hc}</div>
+                    <div class="drug-sub">
+                        <b>BHYT:</b> ${d.bhyt}<br>
+                        <b>Viện phí:</b> ${d.vp}<br>
+                        <span class="hashtag">${d.nhom}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function searchDrug() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = drugs.filter(d => 
+                d.hc.toLowerCase().includes(q) || 
+                d.bhyt.toLowerCase().includes(q) || 
+                d.vp.toLowerCase().includes(q) || 
+                d.nhom.toLowerCase().includes(q)
+            );
+            renderDrugs(filtered);
+        }
+
+        function openDetail(index) {
+            const d = drugs[index];
+            document.getElementById('m-title').innerText = d.hc;
+            document.getElementById('m-bhyt').innerText = d.bhyt;
+            document.getElementById('m-vp').innerText = d.vp;
+            document.getElementById('m-cd').innerText = d.cd;
+            document.getElementById('m-ccd').innerText = d.ccd;
+            document.getElementById('m-lieu').innerText = d.lieu;
+            document.getElementById('m-nhom').innerText = d.nhom;
+            document.getElementById('detailOverlay').style.display = 'flex';
+        }
+
+        function closeDetail() {
+            document.getElementById('detailOverlay').style.display = 'none';
+            document.getElementById('calcResult').style.display = 'none';
+        }
+
+        function calculateInfusion() {
+            const weight = parseFloat(document.getElementById('w').value);
+            const doseTarget = parseFloat(document.getElementById('dose').value);
+            const unit = document.getElementById('unit').value;
+            const ampoules = parseFloat(document.getElementById('amp').value);
+            const volume = parseFloat(document.getElementById('vol').value);
+            const dropFactor = parseFloat(document.getElementById('df').value);
+
+            // 1. Tính nồng độ (Concentration) mg/ml -> ug/ml
+            const totalMg = ampoules * 1; // Giả định mỗi ống 1mg
+            const conc_ug_ml = (totalMg * 1000) / volume;
+
+            let mlh = 0;
+            // 2. Tính tốc độ ml/giờ dựa trên đơn vị
+            if (unit === "ugkgmin") {
+                mlh = (doseTarget * weight * 60) / conc_ug_ml;
+            } else if (unit === "ugmin") {
+                mlh = (doseTarget * 60) / conc_ug_ml;
+            } else if (unit === "mgh") {
+                mlh = doseTarget / (totalMg / volume);
+            }
+
+            const gtt = (mlh * dropFactor) / 60;
+
+            document.getElementById('calcResult').style.display = 'block';
+            document.getElementById('res-mlh').innerText = mlh.toFixed(1) + " ml/giờ";
+            document.getElementById('res-gtt').innerText = "≈ " + Math.round(gtt) + " giọt/phút";
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
