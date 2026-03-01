@@ -33,6 +33,13 @@
         label { font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-top: 4px; box-sizing: border-box; font-size: 15px; }
         .res-calc { background: var(--primary); color: white; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center; }
+
+        /* Lớp phủ bảo vệ: Cho phép nhìn, cho phép tìm nhưng CẤM BẤM */
+        .lock-interaction {
+        pointer-events: none; /* Vô hiệu hóa mọi cú click chuột/chạm tay */
+        opacity: 0.85;        /* Làm mờ nhẹ để tạo cảm giác "đang xử lý" */
+        user-select: none;    /* Không cho bôi đen copy */
+        }
     </style>
 </head>
 <body>
