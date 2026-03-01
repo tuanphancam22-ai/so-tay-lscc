@@ -51,7 +51,11 @@
     <input type="text" id="searchInput" class="search-box" placeholder="Tìm hoạt chất, BHYT, Viện phí, Nhóm..." onkeyup="searchDrug()">
     
     <div id="loading" style="text-align:center; padding: 20px; color: #666;">Đang đồng bộ dữ liệu...</div>
-    <div id="drugList"></div>
+    <div class="status-msg">
+    ⚠️ <b>Thông báo:</b> Dữ liệu chuyên môn đang được thẩm định. Hiện chỉ khả dụng chức năng tra cứu tên thuốc.
+    </div>
+    
+    <div id="drugList" class="lock-interaction"></div>
 
     <div id="detailOverlay" class="overlay">
         <div class="modal">
