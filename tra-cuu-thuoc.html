@@ -102,6 +102,7 @@
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Thuoc`;
 
         let drugs = [];
+        let currentDisplayList = []; // Biến này để lưu danh sách đang hiển thị (đã tìm kiếm)
 
         async function loadData() {
             try {
@@ -134,6 +135,7 @@
         }
 
         function renderDrugs(list) {
+            currentDisplayList = list; // Cập nhật danh sách thực tế đang hiện trên màn hình
             const container = document.getElementById('drugList');
             container.innerHTML = list.map((d, index) => `
                 <div class="drug-card" onclick="openDetail(${index})">
@@ -147,6 +149,7 @@
             `).join('');
         }
 
+
         function searchDrug() {
             const q = document.getElementById('searchInput').value.toLowerCase();
             const filtered = drugs.filter(d => 
@@ -155,11 +158,14 @@
                 d.vp.toLowerCase().includes(q) || 
                 d.nhom.toLowerCase().includes(q)
             );
-            renderDrugs(filtered);
+            // Gọi hàm render với danh sách đã lọc
+            renderDrugs(filtered); 
         }
-
+        
         function openDetail(index) {
-            const d = drugs[index];
+            // Quan trọng: Lấy dữ liệu từ currentDisplayList thay vì drugs
+            const d = currentDisplayList[index]; 
+            
             document.getElementById('m-title').innerText = d.hc || "Thông tin thuốc";
             document.getElementById('m-bhyt').innerText = d.bhyt || "---";
             document.getElementById('m-vp').innerText = d.vp || "---";
