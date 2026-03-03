@@ -167,26 +167,47 @@
     </div>
 
     <script>
-        const ANN_SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE'; // ID của bác
+        const ANN_SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE'; 
         const ANN_URL = `https://docs.google.com/spreadsheets/d/${ANN_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=ThongBao`;
     
         async function loadAnnouncements() {
             try {
                 const res = await fetch(ANN_URL);
                 const text = await res.text();
-                const rows = text.split('\n').slice(1, 4); // Chỉ lấy tối đa 3 dòng đầu
+                const rows = text.split('\n').slice(1, 4); 
     
                 const container = document.getElementById('announcementList');
-                container.innerHTML = rows.map(r => {
-                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    const title = (c[0] || "").replace(/"/g,'').trim();
-                    const tag = (c[1] || "").replace(/"/g,'').trim();
-                    const img = (c[2] || "").replace(/"/g,'').trim() || "https://via.placeholder.com/50";
-                    const link = (c[3] || "").replace(/"/g,'').trim() || "#";
+                container.innerHTML = rows.map((r, index) => {
+                    const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
+                    
+                    let title = c[0] || "Thông báo";
+                    let tag = c[1] || "HOT";
+                    let rawImg = c[2] || "";
+                    let rawLink = c[3] || "#";
+    
+                    // 1. Xử lý Link ảnh Drive
+                    let finalImg = rawImg;
+                    if (rawImg.includes('drive.google.com')) {
+                        const fileId = rawImg.match(/\/d\/(.+?)\//) || rawImg.match(/id=(.+?)(&|$)/);
+                        if (fileId) finalImg = `https://lh3.googleusercontent.com/d/${fileId[1]}`;
+                    }
+    
+                    // 2. Xử lý Link PDF để dùng trình nhúng (Google Viewer)
+                    let finalLink = rawLink;
+                    if (rawLink.toLowerCase().includes('.pdf') || rawLink.includes('/file/d/')) {
+                        // Nếu là link Drive PDF, trích xuất ID và dùng trình xem trực tiếp
+                        const pdfId = rawLink.match(/\/d\/(.+?)\//);
+                        if (pdfId) {
+                            finalLink = `https://docs.google.com/viewer?url=https://drive.google.com/uc?id=${pdfId[1]}&embedded=true`;
+                        } else {
+                            // Nếu là link PDF trực tiếp khác
+                            finalLink = `https://docs.google.com/viewer?url=${encodeURIComponent(rawLink)}&embedded=true`;
+                        }
+                    }
     
                     return `
-                        <a href="${link}" class="ann-card">
-                            <img src="${img}" class="ann-img">
+                        <a href="${finalLink}" class="ann-card" id="ann-${index}">
+                            <img src="${finalImg}" class="ann-img" onerror="this.src='https://via.placeholder.com/60?text=IMG'">
                             <div class="ann-text-box">
                                 <span class="ann-tag-new">${tag}</span>
                                 <span class="ann-card-title">${title}</span>
@@ -195,12 +216,26 @@
                         </a>
                     `;
                 }).join('');
-            } catch (e) {
-                document.getElementById('announcementList').innerHTML = ""; // Lỗi thì ẩn luôn
-            }
+    
+                // 3. Kích hoạt tính năng Tự động lướt (Auto-slide)
+                startAutoSlide();
+    
+            } catch (e) { console.error(e); }
         }
-        
-        // Gọi hàm khi load trang
+    
+        function startAutoSlide() {
+            const container = document.getElementById('announcementList');
+            let current = 0;
+            setInterval(() => {
+                const cards = container.querySelectorAll('.ann-card');
+                if (cards.length > 0) {
+                    current = (current + 1) % cards.length;
+                    const scrollPos = cards[current].offsetLeft - 15; // 15 là padding
+                    container.scrollTo({ left: scrollPos, behavior: 'smooth' });
+                }
+            }, 4000); // 4 giây chuyển 1 lần cho sếp kịp đọc
+        }
+    
         window.addEventListener('load', loadAnnouncements);
     </script>
     
