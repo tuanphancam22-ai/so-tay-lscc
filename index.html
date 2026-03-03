@@ -206,14 +206,14 @@
                     }
     
                     return `
-                        <a href="${finalLink}" class="ann-card" id="ann-${index}">
+                        <div class="ann-card" onclick="openPDF('${rawLink}', '${title}')" style="cursor:pointer;">
                             <img src="${finalImg}" class="ann-img" onerror="this.src='https://via.placeholder.com/60?text=IMG'">
                             <div class="ann-text-box">
                                 <span class="ann-tag-new">${tag}</span>
                                 <span class="ann-card-title">${title}</span>
                             </div>
                             <div style="color:#ccc; margin-left:5px;">❯</div>
-                        </a>
+                        </div>
                     `;
                 }).join('');
     
@@ -233,7 +233,7 @@
                     const scrollPos = cards[current].offsetLeft - 15; // 15 là padding
                     container.scrollTo({ left: scrollPos, behavior: 'smooth' });
                 }
-            }, 4000); // 4 giây chuyển 1 lần cho sếp kịp đọc
+            }, 4000); // 4 giây chuyển 1 lần 
         }
     
         window.addEventListener('load', loadAnnouncements);
@@ -322,5 +322,6 @@
     window.addEventListener('load', loadAnnouncements);
  </script>
  <script src="auth.js"></script>
+    <script src="viewer.js"></script>
 </body>
 </html>
