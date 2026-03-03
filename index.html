@@ -242,7 +242,50 @@
             </div>
         </div>
     </div>
+<script>
+    const ANN_SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE'; 
+    const ANN_URL = `https://docs.google.com/spreadsheets/d/${ANN_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=ThongBao`;
 
-    <script src="auth.js"></script>
+    async function loadAnnouncements() {
+        try {
+            const res = await fetch(ANN_URL);
+            const text = await res.text();
+            // Tách dòng và xử lý lỗi ngoặc kép của CSV
+            const rows = text.split('\n').slice(1, 4); 
+
+            const container = document.getElementById('announcementList');
+            container.innerHTML = rows.map(r => {
+                const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
+                
+                let title = c[0] || "Thông báo";
+                let tag = c[1] || "Mới";
+                let rawImg = c[2] || "";
+                let link = c[3] || "#";
+
+                // Tự động sửa lỗi link Drive nếu lỡ dán link gốc vào Sheet
+                let finalImg = rawImg;
+                if (rawImg.includes('drive.google.com')) {
+                    const fileId = rawImg.match(/\/d\/(.+?)\//);
+                    if (fileId) finalImg = `https://lh3.googleusercontent.com/u/0/d/${fileId[1]}`;
+                }
+
+                return `
+                    <a href="${link}" class="ann-card">
+                        <img src="${finalImg}" class="ann-img" onerror="this.src='https://via.placeholder.com/50?text=App'">
+                        <div class="ann-text-box">
+                            <span class="ann-tag-new">${tag}</span>
+                            <span class="ann-card-title">${title}</span>
+                        </div>
+                        <div style="color:#ccc; margin-left:5px;">❯</div>
+                    </a>
+                `;
+            }).join('');
+        } catch (e) {
+            console.error("Lỗi tải thông báo:", e);
+        }
+    }
+    window.addEventListener('load', loadAnnouncements);
+ </script>
+ <script src="auth.js"></script>
 </body>
 </html>
