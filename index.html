@@ -24,6 +24,51 @@
         .header p { margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; font-weight: 300; }
 
         .container { padding: 15px; max-width: 600px; margin: auto; }
+       
+        /* Khu vực Thông báo/Ghim */
+        .announcement-bar {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+        border: 1px solid #ffeeba;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 10px 15px 20px 15px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        cursor: pointer;
+        transition: transform 0.2s;
+        }
+    
+        .announcement-bar:active {
+        transform: scale(0.98);
+        }
+    
+        .ann-icon {
+        font-size: 24px;
+        margin-right: 12px;
+        }
+    
+        .ann-content {
+        flex-grow: 1;
+        }
+    
+        .ann-tag {
+        background: #bc4d00;
+        color: white;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        font-weight: bold;
+        }
+    
+        .ann-title {
+        display: block;
+        font-size: 14px;
+        font-weight: bold;
+        color: #856404;
+        margin-top: 4px;
+        }
         
         .section-group { margin-bottom: 25px; }
         .section-title { 
@@ -67,6 +112,15 @@
         <p>Sổ Tay Lâm Sàng Thông Minh </p>
     </div>
 
+    <div class="announcement-bar" onclick="location.href='phac-do.html'">
+        <div class="ann-icon">📢</div>
+        <div class="ann-content">
+            <span class="ann-tag">Mới cập nhật</span>
+            <span class="ann-title">Phác đồ Xử trí Cấp cứu Ngừng tuần hoàn 2026 (AHA)</span>
+        </div>
+        <div style="color: #856404;">❯</div>
+    </div>
+    
     <div class="container">
         <div class="section-group">
             <div class="section-title">Phác đồ & Tiếp cận</div>
