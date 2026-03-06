@@ -1,125 +1,70 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NIHSS - Trợ lý Đột quỵ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NIHSS - Khoa Cấp cứu</title>
     <style>
-        :root {
-            --primary: #0C9943;
-            --danger: #d93025;
-            --warning: #f29900;
-            --bg: #f4f7f6;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--bg);
-            margin: 0; padding: 0;
-            overflow-x: hidden;
-            display: flex; flex-direction: column; height: 100vh;
-        }
-        /* Header & Đồng hồ */
-        .header {
-            background: white; padding: 15px; text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; z-index: 10;
-        }
-        .timer-btn {
-            background: #e8f0fe; color: #1a73e8; border: 2px solid #1a73e8;
-            padding: 10px 20px; font-size: 24px; font-weight: bold;
-            border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
-        }
+        :root { --primary: #0C9943; --danger: #d93025; --warning: #f29900; --bg: #f4f7f6; }
+        body { font-family: Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 0; overflow-x: hidden; display: flex; flex-direction: column; height: 100vh; }
+        .header { background: white; padding: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10; }
+        .timer-btn { background: #e8f0fe; color: #1a73e8; border: 2px solid #1a73e8; padding: 10px 20px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; }
         .timer-btn.active { background: #1a73e8; color: white; }
         .timer-btn.warning { background: var(--warning); border-color: var(--warning); color: white; }
         .timer-btn.danger { background: var(--danger); border-color: var(--danger); color: white; }
-        
-        /* Tiến trình */
         .progress-container { height: 6px; background: #e0e0e0; width: 100%; margin-top: 10px; border-radius: 3px; }
-        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; border-radius: 3px; }
-        .progress-text { font-size: 12px; color: #666; margin-top: 5px; display: block; }
-
-        /* Vùng trượt thẻ */
-        .slider-container {
-            display: flex; flex-grow: 1; overflow-x: auto;
-            scroll-snap-type: x mandatory; scroll-behavior: smooth;
-            padding: 20px 0; -webkit-overflow-scrolling: touch;
-        }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        .progress-text { font-size: 12px; color: #666; margin-top: 5px; }
+        .slider-container { display: flex; flex-grow: 1; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 20px 0; -webkit-overflow-scrolling: touch; }
         .slider-container::-webkit-scrollbar { display: none; }
-        
-        .card { flex: 0 0 100%; scroll-snap-align: center; padding: 0 20px; box-sizing: border-box; display: flex; flex-direction: column; }
+        .card { flex: 0 0 100%; scroll-snap-align: center; padding: 0 15px; box-sizing: border-box; display: flex; flex-direction: column; }
         .card-content { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; overflow-y: auto; }
-        
-        .q-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
-        .q-note { font-size: 13px; font-style: italic; color: #666; margin-bottom: 15px; background: #fff3cd; padding: 10px; border-radius: 8px; border-left: 3px solid #ffc107; }
-        
-        .option-btn {
-            display: block; width: 100%; text-align: left; padding: 12px 15px;
-            margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px;
-            background: white; font-size: 15px; color: #333; cursor: pointer;
-        }
+        .q-eval { font-size: 14px; color: var(--primary); font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .q-title { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .q-note { font-size: 13px; font-style: italic; color: #444; margin-bottom: 15px; background: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; line-height: 1.4; }
+        .option-btn { display: block; width: 100%; text-align: left; padding: 12px 15px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; background: white; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .option-btn.selected { background: #e6f4ea; border-color: var(--primary); font-weight: bold; }
-        
-        /* Popup ảnh */
-        .nihss-img-viewer {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.9); z-index: 9999;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .nihss-img-viewer img { max-width: 90%; max-height: 70%; border-radius: 10px; margin-bottom: 10px; border: 2px solid white; }
-
-        /* Điều hướng */
+        .option-btn.un-type { border-color: #666; color: #666; font-style: italic; }
+        .nihss-img-viewer { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .nihss-img-viewer img { max-width: 95%; max-height: 80%; border-radius: 5px; border: 2px solid white; margin-bottom: 10px; }
         .nav-buttons { display: flex; justify-content: space-between; padding: 15px 20px; background: white; border-top: 1px solid #eee; }
         .nav-btn { padding: 10px 20px; border: none; border-radius: 8px; background: #f1f3f4; font-weight: bold; cursor: pointer; }
         .nav-btn.primary { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <button id="timerBtn" class="timer-btn" onclick="toggleTimer()">⏱ <span id="timeDisplay">00:00</span></button>
-        <div class="progress-text" id="progressText">Đang tải dữ liệu...</div>
+        <div class="progress-text" id="progressText">Đang kết nối dữ liệu...</div>
         <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
     </div>
-
     <div class="slider-container" id="sliderContainer"></div>
-
     <div class="nav-buttons">
         <button class="nav-btn" onclick="prevCard()">❮ Trước</button>
         <button class="nav-btn primary" onclick="nextCard()">Tiếp ❯</button>
     </div>
-
     <div id="imgViewer" class="nihss-img-viewer" onclick="this.style.display='none'">
-        <div id="imgList" style="display:flex; flex-direction:column; align-items:center; gap:10px; overflow-y:auto; width:100%;"></div>
-        <p style="color:white; font-weight:bold; margin-top:10px;">[ Chạm để đóng ]</p>
+        <div id="imgList" style="display:flex; flex-direction:column; align-items:center; gap:15px; overflow-y:auto; width:100%; padding:20px;"></div>
+        <p style="color:white; font-weight:bold;">[ Chạm bất kỳ đâu để đóng ]</p>
     </div>
 
     <script>
-        // --- CẤU HÌNH ---
         const SHEET_ID = '1REXuH0gV0GvQG96elQ0NWODek31vLaQCNO8gnBtSdKE';
         const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=NIHSS`;
 
         let nihssData = [];
         let userAnswers = {};
-        let secondsElapsed = 0;
-        let isRunning = false;
-        let timerInterval;
+        let timerInterval, seconds = 0, isRunning = false;
 
-        // --- ĐỒNG HỒ ---
         function toggleTimer() {
             const btn = document.getElementById('timerBtn');
             if (isRunning) { clearInterval(timerInterval); btn.classList.remove('active'); }
-            else { btn.classList.add('active'); timerInterval = setInterval(updateTimer, 1000); }
+            else { btn.classList.add('active'); timerInterval = setInterval(() => {
+                seconds++;
+                const m = Math.floor(seconds/60).toString().padStart(2,'0'), s = (seconds%60).toString().padStart(2,'0');
+                document.getElementById('timeDisplay').innerText = `${m}:${s}`;
+                if(seconds === 900) btn.className = 'timer-btn warning';
+                if(seconds === 1800) btn.className = 'timer-btn danger';
+            }, 1000); }
             isRunning = !isRunning;
         }
-        function updateTimer() {
-            secondsElapsed++;
-            const m = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
-            const s = (secondsElapsed % 60).toString().padStart(2, '0');
-            document.getElementById('timeDisplay').innerText = `${m}:${s}`;
-            if (secondsElapsed === 900) document.getElementById('timerBtn').className = 'timer-btn warning';
-            if (secondsElapsed === 1800) document.getElementById('timerBtn').className = 'timer-btn danger';
-        }
 
-        // --- TẢI DỮ LIỆU ---
         async function loadData() {
             try {
                 const res = await fetch(URL);
@@ -128,83 +73,85 @@
                 nihssData = rows.map(r => {
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
                     return {
-                        title: c[0], img: c[2], note: c[3],
-                        opts: [c[4], c[5], c[6], c[7], c[8]].filter(o => o && o !== "")
+                        stt: c[0], eval: c[1], imgs: c[2], note: c[3],
+                        un: c[4], s0: c[5], s1: c[6], s2: c[7], s3: c[8], s4: c[9]
                     };
                 });
                 renderCards();
-            } catch (e) { alert("Lỗi kết nối Sheet!"); }
+            } catch (e) { alert("Lỗi tải dữ liệu!"); }
         }
 
         function renderCards() {
             const container = document.getElementById('sliderContainer');
-            container.innerHTML = nihssData.map((q, i) => `
+            container.innerHTML = nihssData.map((q, i) => {
+                let optionsHtml = '';
+                if (q.un) optionsHtml += `<button class="option-btn un-type ${userAnswers[i]==='UN'?'selected':''}" onclick="selectOpt(${i}, 'UN', this)">UN - ${q.un}</button>`;
+                [q.s0, q.s1, q.s2, q.s3, q.s4].forEach((txt, score) => {
+                    if (txt) optionsHtml += `<button class="option-btn ${userAnswers[i]===score?'selected':''}" onclick="selectOpt(${i}, ${score}, this)">${score} - ${txt}</button>`;
+                });
+
+                return `
                 <div class="card">
                     <div class="card-content">
-                        <div class="q-title">${i + 1}. ${q.title}</div>
-                        <div class="q-note">${q.note || 'Không có lưu ý'}</div>
-                        ${q.img ? `<button onclick="showImgs('${q.img}')" style="width:100%; padding:10px; background:#1a73e8; color:white; border:none; border-radius:8px; margin-bottom:15px;">🖼 Xem hình minh họa</button>` : ''}
-                        <div class="options">
-                            ${q.opts.map((text, score) => `
-                                <button class="option-btn ${userAnswers[i] === score ? 'selected' : ''}" onclick="selectOpt(${i}, ${score}, this)">
-                                    ${score} - ${text}
-                                </button>
-                            `).join('')}
-                        </div>
+                        <div class="q-eval">${q.eval}</div>
+                        <div class="q-title">${q.stt}. Đánh giá</div>
+                        <div class="q-note">${q.note.replace(/\n/g, '<br>')}</div>
+                        ${q.imgs ? `<button onclick="showImgs('${q.imgs}')" style="width:100%; padding:12px; background:#1a73e8; color:white; border:none; border-radius:8px; margin-bottom:15px; font-weight:bold;">🖼 Xem hình minh họa</button>` : ''}
+                        <div class="options">${optionsHtml}</div>
                     </div>
-                </div>
-            `).join('') + `<div class="card" id="resultCard"></div>`;
+                </div>`;
+            }).join('') + `<div class="card" id="resultCard"></div>`;
             updateProgress();
         }
 
         function selectOpt(qIdx, score, btn) {
             userAnswers[qIdx] = score;
-            renderCards(); // Vẽ lại để cập nhật trạng thái chọn
+            renderCards();
             if (qIdx < nihssData.length - 1) setTimeout(nextCard, 300);
             else showFinalResult();
         }
 
+        function showImgs(imgStr) {
+            const viewer = document.getElementById('imgViewer'), list = document.getElementById('imgList');
+            const imgs = imgStr.split(',').map(s => s.trim()).filter(s => s !== "");
+            if(imgs.length === 0) return;
+            list.innerHTML = imgs.map(src => `<img src="${src}" onerror="this.src='https://via.placeholder.com/300x200?text=Lỗi+tải+ảnh+${src}'">`).join('');
+            viewer.style.display = 'flex';
+        }
+
         function showFinalResult() {
-            const total = Object.values(userAnswers).reduce((a, b) => a + b, 0);
+            const scores = Object.values(userAnswers).map(v => v === 'UN' ? 0 : v);
+            const total = scores.reduce((a, b) => a + b, 0);
             let color = "#0C9943", advice = "";
-            if (total <= 3) advice = "NIHSS THẤP (0-3): Theo dõi sát, thảo luận thêm chuyên gia.";
+            if (total <= 3) advice = "NIHSS THẤP (0-3): Theo dõi sát, hội chẩn thêm chuyên gia.";
             else if (total <= 5) advice = "TIÊU SỢI HUYẾT: Cân nhắc nếu có khiếm khuyết chức năng.";
-            else if (total <= 24) { color = "#f29900"; advice = "TIÊU SỢI HUYẾT + XEM XÉT CAN THIỆP MẠCH (Lấy huyết khối)."; }
-            else { color = "#d93025"; advice = "RẤT NẶNG (>25): Nguy cơ xuất huyết cao. Hội chẩn khẩn."; }
+            else if (total <= 24) { color = "#f29900"; advice = "TIÊU SỢI HUYẾT + XEM XÉT CAN THIỆP MẠCH."; }
+            else { color = "#d93025"; advice = "RẤT NẶNG (>24): Nguy cơ xuất huyết cao. Hội chẩn khẩn."; }
 
             document.getElementById('resultCard').innerHTML = `
-                <div class="card-content" style="text-align:center; border: 3px solid ${color}">
-                    <h2 style="color:${color}">TỔNG ĐIỂM: ${total}</h2>
-                    <p style="font-weight:bold; font-size:16px;">${advice}</p>
-                    <button onclick="copyRes(${total}, '${advice}')" style="width:100%; padding:15px; background:${color}; color:white; border:none; border-radius:8px; font-weight:bold;">📋 COPY KẾT QUẢ</button>
-                    <button onclick="location.reload()" style="margin-top:10px; border:none; background:none; color:#666;">Làm lại từ đầu</button>
+                <div class="card-content" style="text-align:center; border: 4px solid ${color}">
+                    <h2 style="color:${color}; font-size:40px; margin:10px 0;">TỔNG: ${total}</h2>
+                    <p style="font-weight:bold; font-size:18px; color:#333; min-height:80px;">${advice}</p>
+                    <button onclick="copyRes(${total}, '${advice}')" style="width:100%; padding:15px; background:${color}; color:white; border:none; border-radius:8px; font-weight:bold; font-size:16px;">📋 COPY KẾT QUẢ</button>
+                    <button onclick="location.reload()" style="margin-top:20px; border:none; background:none; color:#666; text-decoration:underline;">Làm lại từ đầu</button>
                 </div>`;
             nextCard();
         }
 
-        function showImgs(imgStr) {
-            const viewer = document.getElementById('imgViewer');
-            const list = document.getElementById('imgList');
-            const imgs = imgStr.split(',');
-            list.innerHTML = imgs.map(src => `<img src="${src.trim()}">`).join('');
-            viewer.style.display = 'flex';
-        }
-
         function copyRes(total, advice) {
-            let txt = `KẾT QUẢ NIHSS: ${total} ĐIỂM\nKhuyến cáo: ${advice}`;
-            navigator.clipboard.writeText(txt);
-            alert("Đã copy!");
+            let detail = "CHI TIẾT NIHSS: ";
+            nihssData.forEach((q, i) => detail += `${q.stt}(${userAnswers[i] !== undefined ? userAnswers[i] : '?'}) `);
+            navigator.clipboard.writeText(`${detail}\n===> TỔNG: ${total} ĐIỂM\nKẾT LUẬN: ${advice}`);
+            alert("Đã copy kết quả chuyên môn!");
         }
 
         function nextCard() { document.getElementById('sliderContainer').scrollBy({ left: window.innerWidth, behavior: 'smooth' }); }
         function prevCard() { document.getElementById('sliderContainer').scrollBy({ left: -window.innerWidth, behavior: 'smooth' }); }
         function updateProgress() {
             const done = Object.keys(userAnswers).length;
-            const pct = (done / nihssData.length) * 100;
-            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('progressBar').style.width = (done / nihssData.length * 100) + '%';
             document.getElementById('progressText').innerText = `Đã khám: ${done} / ${nihssData.length}`;
         }
-
         window.onload = loadData;
     </script>
 </body>
