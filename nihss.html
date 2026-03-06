@@ -81,10 +81,10 @@
 
             const btn = document.getElementById('timerBtn');
             // Cảnh báo màu sắc theo thời gian
-            if (secondsElapsed === 15 * 60) { // 15 phút
+            if (secondsElapsed === 1 * 60) { // 15 phút
                 btn.classList.remove('active');
                 btn.classList.add('warning');
-            } else if (secondsElapsed === 30 * 60) { // 30 phút
+            } else if (secondsElapsed === 3 * 60) { // 30 phút
                 btn.classList.remove('warning');
                 btn.classList.add('danger');
             }
