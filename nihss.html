@@ -77,9 +77,9 @@
                 document.getElementById('timeDisplay').innerText = `${m}:${s}`;
                 
                 const btn = document.getElementById('timerBtn');
-                if(seconds === 30) { // 15 Phút
+                if(seconds === 300) { // 5 Phút
                     btn.classList.add('warning');
-                } else if(seconds === 60) { // 30 Phút
+                } else if(seconds === 600) { // 10 Phút
                     btn.classList.remove('warning');
                     btn.classList.add('danger');
                 }
