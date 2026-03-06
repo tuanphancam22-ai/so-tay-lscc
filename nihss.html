@@ -103,4 +103,73 @@
             display: flex; justify-content: space-between; padding: 15px 20px; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         }
         .nav-btn {
-            padding: 10px 20px; border: none; border-radius: 8px;
+            padding: 10px 20px; border: none; border-radius: 8px; background: #f1f3f4; color: #333; font-weight: bold; cursor: pointer;
+        }
+        .nav-btn.primary { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button id="timerBtn" class="timer-btn" onclick="toggleTimer()">
+            ⏱ <span id="timeDisplay">00:00</span>
+        </button>
+        <div class="progress-text" id="progressText">Câu 1 / 15</div>
+        <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+
+    <div class="slider-container" id="sliderContainer">
+        </div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="prevCard()">❮ Trước</button>
+        <button class="nav-btn primary" onclick="nextCard()">Tiếp ❯</button>
+    </div>
+
+    <script>
+        // --- LOGIC ĐỒNG HỒ SINH TỬ ---
+        let timerInterval;
+        let secondsElapsed = 0;
+        let isRunning = false;
+
+        function toggleTimer() {
+            const btn = document.getElementById('timerBtn');
+            if (isRunning) {
+                clearInterval(timerInterval);
+                btn.classList.remove('active');
+            } else {
+                btn.classList.add('active');
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+            isRunning = !isRunning;
+        }
+
+        function updateTimer() {
+            secondsElapsed++;
+            const m = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+            const s = (secondsElapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timeDisplay').innerText = `${m}:${s}`;
+
+            const btn = document.getElementById('timerBtn');
+            // Cảnh báo màu sắc theo thời gian
+            if (secondsElapsed === 15 * 60) { // 15 phút
+                btn.classList.remove('active');
+                btn.classList.add('warning');
+            } else if (secondsElapsed === 30 * 60) { // 30 phút
+                btn.classList.remove('warning');
+                btn.classList.add('danger');
+            }
+        }
+        
+        // --- LOGIC TRƯỢT THẺ TẠM THỜI ---
+        function nextCard() {
+            const container = document.getElementById('sliderContainer');
+            container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+        }
+        function prevCard() {
+            const container = document.getElementById('sliderContainer');
+            container.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
