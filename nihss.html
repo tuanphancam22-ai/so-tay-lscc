@@ -8,35 +8,28 @@
         :root { --primary: #0C9943; --danger: #d93025; --warning: #f29900; --bg: #f4f7f6; }
         body { font-family: Arial, sans-serif; background-color: var(--bg); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Header & Đồng hồ */
         .header { background: white; padding: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10; }
         .timer-btn { background: #e8f0fe; color: #1a73e8; border: 2px solid #1a73e8; padding: 8px 15px; font-size: 22px; font-weight: bold; border-radius: 25px; cursor: pointer; }
-        .timer-btn.warning { background: var(--warning); border-color: var(--warning); color: white; }
-        .timer-btn.danger { background: var(--danger); border-color: var(--danger); color: white; }
         
         .progress-container { height: 4px; background: #e0e0e0; width: 100%; margin-top: 8px; }
         .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
 
-        /* Vùng nội dung */
         .slider-container { display: flex; flex-grow: 1; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
         .slider-container::-webkit-scrollbar { display: none; }
         .card { flex: 0 0 100%; scroll-snap-align: center; box-sizing: border-box; padding: 15px; display: flex; flex-direction: column; }
         .card-content { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex-grow: 1; overflow-y: auto; }
 
-        /* Typography theo yêu cầu bác Chí */
         .q-eval { font-size: 13px; color: var(--primary); font-weight: bold; text-transform: uppercase; margin-bottom: 2px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .q-stt { font-size: 18px; font-weight: bold; color: #333; margin: 8px 0; }
         .q-question { font-size: 16px; color: #004d40; background: #e0f2f1; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #26a69a; font-weight: 500; }
         .q-note { font-size: 13px; color: #555; background: #fffde7; padding: 10px; border-radius: 5px; border: 1px dashed #fbc02d; margin-bottom: 15px; line-height: 1.4; }
 
-        /* Nút lựa chọn */
         .option-btn { display: block; width: 100%; text-align: left; padding: 12px 15px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 8px; background: white; font-size: 14px; cursor: pointer; }
         .option-btn.selected { background: #e8f5e9; border-color: var(--primary); border-width: 2px; font-weight: bold; }
-        .un-btn { border-color: #9e9e9e; color: #757575; font-style: italic; background: #fafafa; }
+        .un-btn { border-color: #9e9e9e; color: #d93025; font-weight: bold; background: #fff5f5; border-style: dashed; }
 
-        /* Xem ảnh */
         .nihss-img-viewer { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .nihss-img-viewer img { max-width: 90%; max-height: 80%; border: 2px solid white; border-radius: 5px; margin-bottom: 10px; }
+        .nihss-img-viewer img { max-width: 90%; max-height: 40%; border: 2px solid white; border-radius: 5px; margin-bottom: 10px; background: white; }
 
         .nav-buttons { display: flex; justify-content: space-between; padding: 10px 15px; background: white; border-top: 1px solid #eee; }
         .nav-btn { padding: 10px 18px; border: none; border-radius: 6px; background: #eee; font-weight: bold; }
@@ -53,13 +46,13 @@
 
     <div class="nav-buttons">
         <button class="nav-btn" onclick="prevCard()">❮ TRƯỚC</button>
-        <div id="progressText" style="font-size: 12px; align-self: center; color: #888;">0 / 15</div>
+        <div id="progressText" style="font-size: 12px; align-self: center; color: #888;">Đang tải dữ liệu...</div>
         <button class="nav-btn" style="background:var(--primary); color:white;" onclick="nextCard()">TIẾP ❯</button>
     </div>
 
     <div id="imgViewer" class="nihss-img-viewer" onclick="this.style.display='none'">
-        <div id="imgList" style="text-align:center; overflow-y:auto; width:100%;"></div>
-        <p style="color:white;">[ Chạm để đóng ]</p>
+        <div id="imgList" style="text-align:center; overflow-y:auto; width:100%; padding: 20px 0;"></div>
+        <p style="color:white; font-weight:bold; background:rgba(0,0,0,0.5); padding:10px; border-radius:20px;">[ Chạm để đóng ]</p>
     </div>
 
     <script>
@@ -76,8 +69,6 @@
                 seconds++;
                 const m = Math.floor(seconds/60).toString().padStart(2,'0'), s = (seconds%60).toString().padStart(2,'0');
                 document.getElementById('timeDisplay').innerText = `${m}:${s}`;
-                if(seconds === 900) document.getElementById('timerBtn').classList.add('warning');
-                if(seconds === 1800) document.getElementById('timerBtn').classList.add('danger');
             }, 1000); }
             isRunning = !isRunning;
         }
@@ -88,8 +79,12 @@
                 const text = await res.text();
                 const rows = text.split('\n').slice(1);
                 nihssData = rows.map(r => {
+                    // Xử lý CSV chuẩn (giữ nội dung trong ngoặc kép)
                     const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
-                    return { stt: c[0], eval: c[1], ques: c[2], img: c[3], note: c[4], un: c[5], s0: c[6], s1: c[7], s2: c[8], s3: c[9], s4: c[10] };
+                    return { 
+                        stt: c[0], eval: c[1], ques: c[2], note: c[3], 
+                        un: c[4], s0: c[5], s1: c[6], s2: c[7], s3: c[8], s4: c[9] 
+                    };
                 });
                 render();
             } catch (e) { console.error(e); }
@@ -98,13 +93,25 @@
         function render() {
             const container = document.getElementById('sliderContainer');
             container.innerHTML = nihssData.map((q, i) => {
-                // Chỉ hiện nút ảnh cho câu 9 (Ngôn ngữ) và câu 10 (Nói đó)
-                const hasValidImg = (q.stt == "9" || q.stt == "10") && q.img;
-                
+                // Xử lý thông minh: Nếu ques chứa đuôi ảnh thì hiện nút, không thì hiện chữ
+                let imageBtn = "";
+                let displayQues = q.ques;
+                if (q.ques && (q.ques.toLowerCase().includes('.jpg') || q.ques.toLowerCase().includes('.png'))) {
+                    imageBtn = `<button onclick="showImgs('${q.ques}')" style="width:100%; padding:12px; background:#1a73e8; color:white; border:none; border-radius:8px; margin-bottom:15px; font-weight:bold;">🖼 XEM HÌNH MINH HỌA</button>`;
+                    displayQues = ""; 
+                }
+
                 let opts = "";
-                if (q.un) opts += `<button class="option-btn un-btn ${userAnswers[i]==='UN'?'selected':''}" onclick="choose(${i},'UN')">UN - ${q.un}</button>`;
+                // UN chỉ hiện nếu cột E có dữ liệu
+                if (q.un && q.un.length > 1) {
+                    opts += `<button class="option-btn un-btn ${userAnswers[i]==='UN'?'selected':''}" onclick="choose(${i},'UN')">UN - ${q.un}</button>`;
+                }
+                
+                // Điểm từ 0 đến 4
                 [q.s0, q.s1, q.s2, q.s3, q.s4].forEach((txt, s) => {
-                    if (txt) opts += `<button class="option-btn ${userAnswers[i]===s?'selected':''}" onclick="choose(${i},${s})">${s} - ${txt}</button>`;
+                    if (txt && txt.length > 1) {
+                        opts += `<button class="option-btn ${userAnswers[i]===s?'selected':''}" onclick="choose(${i},${s})">${s} - ${txt}</button>`;
+                    }
                 });
 
                 return `
@@ -112,9 +119,9 @@
                     <div class="card-content">
                         <div class="q-eval">${q.eval}</div>
                         <div class="q-stt">${q.stt}. Đánh giá</div>
-                        ${q.ques ? `<div class="q-question">💬 ${q.ques}</div>` : ''}
-                        <div class="q-note">${q.note.replace(/\n/g, '<br>')}</div>
-                        ${hasValidImg ? `<button onclick="showImgs('${q.img}')" style="width:100%; padding:12px; background:#1a73e8; color:white; border:none; border-radius:8px; margin-bottom:15px; font-weight:bold;">🖼 XEM HÌNH MINH HỌA</button>` : ''}
+                        ${displayQues ? `<div class="q-question">💬 ${displayQues}</div>` : ''}
+                        ${q.note ? `<div class="q-note">${q.note.replace(/\n/g, '<br>')}</div>` : ''}
+                        ${imageBtn}
                         <div class="options">${opts}</div>
                     </div>
                 </div>`;
@@ -131,8 +138,9 @@
 
         function showImgs(str) {
             const list = document.getElementById('imgList');
-            const imgs = str.split(',').map(s => s.trim());
-            list.innerHTML = imgs.map(src => `<img src="${src}" onerror="this.src='https://via.placeholder.com/300x200?text=Lỗi+tải+ảnh+${src}'">`).join('');
+            // Tách các tên file bằng dấu phẩy hoặc khoảng trắng
+            const imgs = str.split(/[,\s\n]+/).filter(s => s.includes('.'));
+            list.innerHTML = imgs.map(src => `<img src="./${src.trim()}" onerror="this.src='https://via.placeholder.com/300x200?text=Không+tìm+thấy+file:+${src}'">`).join('');
             document.getElementById('imgViewer').style.display = 'flex';
         }
 
@@ -152,7 +160,7 @@
             let detail = "CHI TIẾT: ";
             nihssData.forEach((q, i) => detail += `${q.stt}(${userAnswers[i]!==undefined?userAnswers[i]:'?'}) `);
             navigator.clipboard.writeText(`${detail}\n===> TỔNG: ${total} ĐIỂM`);
-            alert("Đã copy!");
+            alert("Đã copy kết quả!");
         }
 
         function nextCard() { document.getElementById('sliderContainer').scrollBy({ left: window.innerWidth, behavior: 'smooth' }); }
@@ -160,7 +168,7 @@
         function updateProgress() {
             const done = Object.keys(userAnswers).length;
             document.getElementById('progressBar').style.width = (done/nihssData.length*100) + '%';
-            document.getElementById('progressText').innerText = `${done} / ${nihssData.length}`;
+            document.getElementById('progressText').innerText = `Câu ${done + 1} / ${nihssData.length}`;
         }
         window.onload = loadData;
     </script>
