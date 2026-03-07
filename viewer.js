@@ -11,8 +11,8 @@ const viewerHTML = `
             position: absolute; 
             top: 0; 
             right: 0; 
-            width: 60px; 
-            height: 60px; 
+            width: 80px; 
+            height: 80px; 
             z-index: 20001; 
             background: rgba(255,255,255,0.01); 
             pointer-events: auto;
