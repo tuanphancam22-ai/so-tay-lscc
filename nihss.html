@@ -145,39 +145,73 @@
 
         // Bổ sung các mốc Kết luận lâm sàng
         function showResult() {
-            const total = Object.values(userAnswers).reduce((a, b) => a + (b === 'UN' ? 0 : b), 0);
+            let total = 0;
+            let unList = [];
+
+            // Duyệt qua các câu trả lời để tính tổng và tìm các câu UN
+            nihssData.forEach((q, i) => {
+                const val = userAnswers[i];
+                if (val === 'UN') {
+                    unList.push(q.stt); // Thêm số thứ tự câu bị UN vào danh sách
+                } else if (val !== undefined) {
+                    total += val;
+                }
+            });
+
             let advice = "";
             let color = "var(--primary)";
 
+            // Phân loại kết luận theo thang điểm của bác
             if (total <= 3) {
                 advice = "Theo dõi, thảo luận thêm với chuyên gia.";
-                color = "#0C9943"; // Xanh
+                color = "#0C9943";
             } else if (total <= 5) {
                 advice = "Tiêu sợi huyết.";
-                color = "#1a73e8"; // Xanh dương
+                color = "#1a73e8";
             } else if (total <= 24) {
                 advice = "Tiêu sợi huyết và xem xét chụp mạch não.";
-                color = "var(--warning)"; // Cam
+                color = "var(--warning)";
             } else {
                 advice = "Rất nặng, nguy cơ xuất huyết cao khi dùng TSH.";
-                color = "var(--danger)"; // Đỏ
+                color = "var(--danger)";
+            }
+
+            // Nếu có chấm UN, bổ sung thông tin vào lời khuyên
+            let unWarning = "";
+            if (unList.length > 0) {
+                unWarning = `<div style="margin-top:10px; color:#d93025; font-size:14px; background:#fff1f0; padding:8px; border-radius:5px; border:1px solid #ffa39e;">
+                                ⚠️ <strong>Lưu ý:</strong> Không thể đánh giá (UN) tại mục: ${unList.join(', ')}. Cần thảo luận kỹ với chuyên gia.
+                             </div>`;
             }
 
             document.getElementById('finalCard').innerHTML = `
                 <div class="card-content" style="text-align:center; border: 4px solid ${color}">
-                    <h2 style="color:${color}; font-size:45px; margin:10px 0;">${total}</h2>
-                    <p style="font-weight:bold; font-size: 16px;">${advice}</p>
-                    <button onclick="copyRes(${total}, '${advice}')" style="width:100%; padding:15px; background:${color}; color:white; border:none; border-radius:8px; font-weight:bold; margin-top: 15px;">📋 COPY KẾT QUẢ</button>
-                    <button onclick="location.reload()" style="margin-top:20px; color:#666; border:none; background:none; text-decoration:underline;">Làm lại từ đầu</button>
+                    <h2 style="color:${color}; font-size:45px; margin:10px 0;">${total}${unList.length > 0 ? '*' : ''}</h2>
+                    <p style="font-weight:bold; font-size: 16px; color:#333;">TỔNG ĐIỂM NIHSS</p>
+                    <p style="font-weight:bold; color:${color}; font-size: 18px; padding:0 10px;">${advice}</p>
+                    ${unWarning}
+                    <button onclick="copyRes(${total}, '${advice}', '${unList.join(', ')}')" style="width:100%; padding:15px; background:${color}; color:white; border:none; border-radius:8px; font-weight:bold; margin-top: 15px; font-size:16px;">📋 COPY KẾT QUẢ</button>
+                    <button onclick="location.reload()" style="margin-top:20px; color:#666; border:none; background:none; text-decoration:underline; font-size:14px;">Làm lại từ đầu</button>
                 </div>`;
             nextCard();
         }
 
-        function copyRes(total, advice) {
-            let detail = "CHI TIẾT: ";
-            nihssData.forEach((q, i) => detail += `${q.stt}(${userAnswers[i]!==undefined?userAnswers[i]:'?'}) `);
-            navigator.clipboard.writeText(`${detail}\n===> TỔNG: ${total} ĐIỂM\nKẾT LUẬN: ${advice}`);
-            alert("Đã copy kết quả!");
+        function copyRes(total, advice, unString) {
+            let detail = "CHI TIẾT NIHSS: ";
+            nihssData.forEach((q, i) => {
+                let val = userAnswers[i];
+                detail += `${q.stt}(${val !== undefined ? val : '?'}) `;
+            });
+
+            let finalText = `${detail}\n===> TỔNG: ${total} ĐIỂM\nKẾT LUẬN: ${advice}`;
+            
+            // Nếu có UN thì thêm vào nội dung copy
+            if (unString) {
+                finalText += `\n⚠️ CHÚ Ý: Có mục không thể đánh giá (UN) tại câu: ${unString}. Cần thảo luận chuyên gia.`;
+            }
+
+            navigator.clipboard.writeText(finalText);
+            alert("Đã copy đầy đủ kết quả và các lưu ý UN!");
         }
 
         function nextCard() { document.getElementById('sliderContainer').scrollBy({ left: window.innerWidth, behavior: 'smooth' }); }
