@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import { Bubbles } from "lucide-react";
+import Header from '../components/Header';
 
 interface ABGResult {
   validity: { isValid: boolean; message: string; hMeasured: number; hCalc: number };
@@ -149,109 +150,101 @@ export default function ABGAnalyzer() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 font-sans pb-10">
-      <div className="max-w-md mx-auto">
-        
-        {/* Nút Back */}
-        <Link href="/" className="inline-block mb-4 text-green-700 font-bold hover:underline flex items-center">
-          <span className="mr-1">←</span> Quay lại trang chủ
-        </Link>
+    <div className="flex flex-col h-[100dvh] bg-slate-50 font-sans text-gray-800 max-w-md mx-auto relative overflow-hidden">
+      {/* ĐỒNG BỘ HEADER MỚI */}
+      <Header 
+        showBack={true} 
+        title="Phân tích kiềm toan" 
+        icon={<Bubbles size={24} />} 
+      />
 
-        {/* Header */}
-        <div className="bg-green-600 text-white p-5 rounded-2xl shadow-sm text-center mb-6">
-          <h1 className="text-2xl font-bold m-0 tracking-wide">Phân tích kiềm toan</h1>
-          <p className="text-sm opacity-90 mt-1">Kiểm định & Phân tích chuyên sâu</p>
+      {/* Form Nhập Liệu */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <div className="grid grid-cols-2 gap-5 mb-6">
+          
+          <div className="col-span-1">
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">pH:</label>
+            <input type="number" inputMode="decimal" placeholder="7.40" value={ph} onChange={(e) => setPh(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">pCO2 (mmHg):</label>
+            <input type="number" inputMode="decimal" placeholder="40" value={pco2} onChange={(e) => setPco2(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">HCO3- (mmol/L):</label>
+            <input type="number" inputMode="decimal" placeholder="24" value={hco3} onChange={(e) => setHco3(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">Na+ (Natri):</label>
+            <input type="number" inputMode="decimal" placeholder="140" value={na} onChange={(e) => setNa(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">Cl- (Clo):</label>
+            <input type="number" inputMode="decimal" placeholder="104" value={cl} onChange={(e) => setCl(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">Albumin (g/L):</label>
+            <input type="number" inputMode="decimal" placeholder="40" value={alb} onChange={(e) => setAlb(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
+          </div>
+          
         </div>
 
-        {/* Form Nhập Liệu */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-          <div className="grid grid-cols-2 gap-5 mb-6">
-            
-            <div className="col-span-1">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">pH:</label>
-              <input type="number" inputMode="decimal" placeholder="7.40" value={ph} onChange={(e) => setPh(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
-            </div>
-
-            <div className="col-span-1">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">pCO2 (mmHg):</label>
-              <input type="number" inputMode="decimal" placeholder="40" value={pco2} onChange={(e) => setPco2(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
-            </div>
-
-            <div className="col-span-1">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">HCO3- (mmol/L):</label>
-              <input type="number" inputMode="decimal" placeholder="24" value={hco3} onChange={(e) => setHco3(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
-            </div>
-
-            <div className="col-span-1">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Na+ (Natri):</label>
-              <input type="number" inputMode="decimal" placeholder="140" value={na} onChange={(e) => setNa(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
-            </div>
-
-            <div className="col-span-1">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Cl- (Clo):</label>
-              <input type="number" inputMode="decimal" placeholder="104" value={cl} onChange={(e) => setCl(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
-            </div>
-
-            <div className="col-span-1">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Albumin (g/L):</label>
-              <input type="number" inputMode="decimal" placeholder="40" value={alb} onChange={(e) => setAlb(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all" />
-            </div>
-            
-          </div>
-
-          {/* Các nút hành động */}
-          <div className="grid grid-cols-3 gap-3">
-            <button 
-              onClick={handleReset}
-              className="col-span-1 bg-white border-2 border-green-600 text-green-700 font-bold text-[15px] p-3 rounded-xl hover:bg-green-50 active:scale-95 transition-transform">
-              Ca mới
-            </button>
-            <button 
-              onClick={analyzeABG}
-              className="col-span-2 bg-green-600 text-white font-bold text-[16px] p-3 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-transform">
-              PHÂN TÍCH NGAY
-            </button>
-          </div>
+        {/* Các nút hành động */}
+        <div className="grid grid-cols-3 gap-3">
+          <button 
+            onClick={handleReset}
+            className="col-span-1 bg-white border-2 border-green-600 text-green-700 font-bold text-[15px] p-3 rounded-xl hover:bg-green-50 active:scale-95 transition-transform">
+            Ca mới
+          </button>
+          <button 
+            onClick={analyzeABG}
+            className="col-span-2 bg-green-600 text-white font-bold text-[16px] p-3 rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-transform">
+            PHÂN TÍCH NGAY
+          </button>
         </div>
-
-        {/* Khu vực Hiển thị Kết quả */}
-        {result && (
-          <div className="mt-6 animate-fade-in-up">
-            
-            {/* Cảnh báo tính đồng nhất */}
-            <div className={`p-4 rounded-xl mb-4 border-l-4 ${result.validity.isValid ? 'bg-green-50 border-green-500 text-green-800' : 'bg-yellow-100 border-yellow-500 text-yellow-800'}`}>
-              <p className="font-bold text-sm">Kiểm định: {result.validity.message}</p>
-              <p className="text-xs mt-1 opacity-80">[H+] đo: {result.validity.hMeasured} | [H+] tính: {result.validity.hCalc}</p>
-            </div>
-
-            {/* Chẩn đoán chính */}
-            <h2 className={`text-[22px] font-black mb-4 uppercase leading-snug ${result.diagnosis === 'BÌNH THƯỜNG' ? 'text-green-600' : 'text-red-600'}`}>
-              {result.diagnosis}
-            </h2>
-
-            {/* Hộp Chi tiết */}
-            <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-3 text-gray-800 text-[15px] leading-relaxed">
-              {result.details.map((detail, index) => {
-                const isHighlight = detail.startsWith('→') || detail.startsWith('Biện luận');
-                return (
-                  <div key={index} className={`flex items-start ${isHighlight ? 'text-green-700 font-semibold ml-2' : ''}`}>
-                    {!isHighlight && <span className="mr-2 text-green-500 font-bold">•</span>}
-                    <span>{detail}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-          </div>
-        )}
-
       </div>
+
+      {/* Khu vực Hiển thị Kết quả */}
+      {result && (
+        <div className="mt-6 animate-fade-in-up">
+          
+          {/* Cảnh báo tính đồng nhất */}
+          <div className={`p-4 rounded-xl mb-4 border-l-4 ${result.validity.isValid ? 'bg-green-50 border-green-500 text-green-800' : 'bg-yellow-100 border-yellow-500 text-yellow-800'}`}>
+            <p className="font-bold text-sm">Kiểm định: {result.validity.message}</p>
+            <p className="text-xs mt-1 opacity-80">[H+] đo: {result.validity.hMeasured} | [H+] tính: {result.validity.hCalc}</p>
+          </div>
+
+          {/* Chẩn đoán chính */}
+          <h2 className={`text-[22px] font-black mb-4 uppercase leading-snug ${result.diagnosis === 'BÌNH THƯỜNG' ? 'text-green-600' : 'text-red-600'}`}>
+            {result.diagnosis}
+          </h2>
+
+          {/* Hộp Chi tiết */}
+          <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm space-y-3 text-gray-800 text-[15px] leading-relaxed">
+            {result.details.map((detail, index) => {
+              const isHighlight = detail.startsWith('→') || detail.startsWith('Biện luận');
+              return (
+                <div key={index} className={`flex items-start ${isHighlight ? 'text-green-700 font-semibold ml-2' : ''}`}>
+                  {!isHighlight && <span className="mr-2 text-green-500 font-bold">•</span>}
+                  <span>{detail}</span>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      )}
     </div>
   );
 }

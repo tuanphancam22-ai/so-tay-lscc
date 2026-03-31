@@ -139,10 +139,12 @@ export default function NIHSSPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#f4f7f6] overflow-hidden font-sans">
-      {/* FIXED HEADER */}
-      <div className="bg-white px-4 pt-4 pb-2 shadow-sm z-10">
-        <Header showBack={true} title="Thang điểm NIHSS" icon={<Zap size={24} />} />
+    <div className="flex flex-col h-[100dvh] bg-slate-50 font-sans text-gray-800 max-w-md mx-auto relative overflow-hidden">
+      {/* ĐỒNG BỘ HEADER MỚI */}
+      <Header 
+        showBack={true} 
+        title="Thang điểm GCS" 
+        icon={<Zap size={24} />} />
         
         <div className="flex justify-center my-2">
           <button onClick={toggleTimer} className={`px-8 py-2 text-2xl font-extrabold rounded-full border-2 transition-all shadow-sm ${getTimerStyles()}`}>
@@ -151,7 +153,7 @@ export default function NIHSSPage() {
         </div>
 
         <div className="h-1.5 bg-gray-200 w-full rounded-full overflow-hidden">
-          <div className="h-full bg-[#0C9943] transition-all" style={{ width: `${data.length ? (Object.keys(answers).length / data.length) * 100 : 0}%` }}></div>
+          <div className="h-full bg-[#0C9943] transition-all" style={{ width: `${data.length ? (Object.keys(answers).length / data.length) * 100 : 0}%` }}>
         </div>
       </div>
 

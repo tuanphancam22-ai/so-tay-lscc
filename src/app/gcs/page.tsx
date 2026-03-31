@@ -1,7 +1,8 @@
 "use client"; // Bắt buộc phải có dòng này ở đầu để Next.js hiểu đây là trang có tương tác (chọn điểm, tính toán)
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Header from '../components/Header';
+import { Brain } from "lucide-react";
 
 export default function GCS() {
   // 1. Tạo các "ngăn kéo" (State) để chứa dữ liệu thay vì lấy từ DOM
@@ -62,15 +63,13 @@ export default function GCS() {
 
   // 4. Giao diện (HTML kết hợp Tailwind CSS)
   return (
-    <main className="min-h-screen bg-gray-50 p-4 font-sans text-gray-800">
-      {/* Nút quay lại dùng Link của Next.js cho mượt */}
-      <Link href="/" className="inline-block mb-4 text-[#0C9943] font-bold">
-        ← Quay lại trang chủ
-      </Link>
-
-      <div className="bg-[#0C9943] text-white p-5 rounded-xl text-center mb-5 shadow-md">
-        <h2 className="text-xl font-bold m-0">Thang điểm GCS</h2>
-      </div>
+     <div className="flex flex-col h-[100dvh] bg-slate-50 font-sans text-gray-800 max-w-md mx-auto relative overflow-hidden">
+      {/* ĐỒNG BỘ HEADER MỚI */}
+      <Header 
+        showBack={true} 
+        title="Thang điểm GCS" 
+        icon={<Brain size={24} />} 
+      />
 
       {/* Form nhập liệu */}
       <div className="bg-white p-4 rounded-xl mb-4 shadow-sm border border-gray-100">
@@ -111,6 +110,6 @@ export default function GCS() {
         <h1 className="text-4xl font-bold m-0">{total} điểm</h1>
         <p className="mt-2 font-bold text-lg">{status}</p>
       </div>
-    </main>
+    </div>
   );
 }

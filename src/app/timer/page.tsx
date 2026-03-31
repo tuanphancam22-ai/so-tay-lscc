@@ -81,7 +81,7 @@ export default function TimerPage() {
     : 0;
 
   return (
-    <AuthGuard>
+    <>
       <div className="flex flex-col h-[100dvh] bg-slate-50 font-sans text-gray-800 max-w-md mx-auto relative overflow-hidden">
         
         <Header showBack={true} title="Đếm Nhịp" icon={<Timer size={24} />} />
@@ -191,6 +191,6 @@ export default function TimerPage() {
         </div>
         
       </div>
-    </AuthGuard>
+    </>
   );
 }
