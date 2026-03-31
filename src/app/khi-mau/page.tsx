@@ -65,7 +65,7 @@ export default function ABGAnalyzer() {
       // B. Nhóm Kiềm huyết
       if (vPco2 < 35 && vHco3 > 26) primaryDisorder = "Kiềm hỗn hợp (Hô hấp & Chuyển hóa)";
       else if (vPco2 < 35) primaryDisorder = "Kiềm hô hấp";
-      else if (vHco3 > 26) primaryPrimary = "Kiềm chuyển hóa";
+      else if (vHco3 > 26) primaryDisorder = "Kiềm chuyển hóa";
       else primaryDisorder = "Kiềm huyết (Chưa rõ nguyên phát)";
     } 
     else { 
@@ -159,7 +159,7 @@ export default function ABGAnalyzer() {
 
         {/* Header */}
         <div className="bg-green-600 text-white p-5 rounded-2xl shadow-sm text-center mb-6">
-          <h1 className="text-2xl font-bold m-0 tracking-wide">Phân tích ABG</h1>
+          <h1 className="text-2xl font-bold m-0 tracking-wide">Phân tích kiềm toan</h1>
           <p className="text-sm opacity-90 mt-1">Kiểm định & Phân tích chuyên sâu</p>
         </div>
 
